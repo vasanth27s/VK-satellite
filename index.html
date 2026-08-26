@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#020509">
+<title>VK SATELLITE // CONTROL</title>
+<style>
+:root { --bg: #020509; --panel: rgba(5, 13, 20, .78); --panel2: rgba(8, 20, 30, .62); --cyan: #00eaff; --green: #00ff9d; --red: #ff3158; --amber: #ffc857; --text: #c9f7ff; --muted: #6c8d99; --line: rgba(0, 234, 255, .16); --glow: 0 0 28px rgba(0,234,255,.22);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { min-height: 100vh; background: radial-gradient(circle at 70% 20%, rgba(0,234,255,.08), transparent 28%), radial-gradient(circle at 20% 80%, rgba(0,255,157,.05), transparent 30%), var(--bg); color: var(--text); font-family: "Courier New", monospace; overflow-x: hidden;
+}
+body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 50; background: repeating-linear-gradient( 0deg, rgba(255,255,255,.018) 0, rgba(255,255,255,.018) 1px, transparent 1px, transparent 4px ); mix-blend-mode: screen;
+}
+canvas#space { position: fixed; inset: 0; z-index: -2;
+}
+#radarCanvas { width: 100%; height: 100%;
+}
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; }
+button { cursor: pointer; border: 1px solid var(--line); background: rgba(0, 234, 255, .05); color: var(--cyan); padding: 10px 14px; transition: .2s;
+}
+button:hover { background: rgba(0,234,255,.14); box-shadow: var(--glow);
+}
+.boot { position: fixed; inset: 0; background: #000; z-index: 100; display: grid; place-items: center; transition: opacity .8s, visibility .8s;
+}
+.boot.hide { opacity: 0; visibility: hidden; }
+.boot-box { width: min(720px, 90vw); border: 1px solid var(--cyan); padding: 28px; box-shadow: 0 0 60px rgba(0,234,255,.16);
+}
+.boot-title { font-size: clamp(28px, 7vw, 72px); letter-spacing: 8px; color: var(--cyan); text-shadow: 0 0 18px var(--cyan);
+}
+.boot-log { margin-top: 24px; min-height: 170px; color: var(--green); line-height: 1.8;
+}
+.progress { height: 3px; background: #09202a; margin-top: 16px;
+}
+.progress span { display: block; height: 100%; width: 0; background: var(--cyan); box-shadow: 0 0 14px var(--cyan); animation: bootProgress 3.2s forwards;
+}
+@keyframes bootProgress { to { width: 100%; } } header { position: sticky; top: 0; z-index: 20; height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; border-bottom: 1px solid var(--line); background: rgba(2,5,9,.78); backdrop-filter: blur(16px);
+}
+.brand { display: flex; gap: 14px; align-items: center;
+}
+.brand-mark { width: 42px; height: 42px; border: 1px solid var(--cyan); display: grid; place-items: center; border-radius: 50%; box-shadow: inset 0 0 16px rgba(0,234,255,.18), 0 0 18px rgba(0,234,255,.12); animation: spin 12s linear infinite;
+}
+.brand-mark::before { content: "VK"; animation: spinReverse 12s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spinReverse { to { transform: rotate(-360deg); } }
+.brand strong { color: #fff; letter-spacing: 3px;
+}
+.brand small { display: block; color: var(--muted); margin-top: 2px;
+}
+.nav { display: flex; gap: 8px;
+}
+.nav a { padding: 9px 12px; color: var(--muted); font-size: 12px;
+}
+.nav a:hover { color: var(--cyan); }
+.status { display: flex; align-items: center; gap: 9px; color: var(--green); font-size: 12px;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); animation: pulse 1.5s infinite;
+}
+@keyframes pulse { 50% { opacity: .35; } } main { width: min(1500px, 94vw); margin: auto;
+}
+.hero { min-height: 650px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 34px; align-items: center; padding: 80px 0 50px;
+}
+.eyebrow { color: var(--green); letter-spacing: 5px; font-size: 12px; margin-bottom: 18px;
+}
+.hero h1 { font-family: Arial, sans-serif; font-size: clamp(54px, 9vw, 132px); line-height: .84; letter-spacing: -7px; color: #fff; text-shadow: 0 0 40px rgba(0,234,255,.22);
+}
+.hero h1 span { color: transparent; -webkit-text-stroke: 1px var(--cyan);
+}
+.hero p { max-width: 650px; color: var(--muted); line-height: 1.8; margin: 28px 0;
+}
+.hero-actions { display: flex; gap: 10px; flex-wrap: wrap;
+}
+.primary { color: #001013; background: var(--cyan); border-color: var(--cyan); font-weight: bold;
+}
+.primary:hover { color: #001013; background: #65f4ff;
+}
+.satellite { position: relative; height: 480px; display: grid; place-items: center;
+}
+.orbit { position: absolute; width: 90%; aspect-ratio: 1; border: 1px solid rgba(0,234,255,.18); border-radius: 50%; transform: rotate(-17deg) scaleY(.35);
+}
+.orbit.two { width: 70%; transform: rotate(62deg) scaleY(.42);
+}
+.orbit.three { width: 52%; transform: rotate(17deg) scaleY(.55);
+}
+.sat-body { width: 150px; height: 90px; border: 2px solid var(--cyan); background: linear-gradient(90deg, transparent 46%, rgba(0,234,255,.4) 47%, rgba(0,234,255,.4) 53%, transparent 54%), linear-gradient(0deg, rgba(0,234,255,.08), rgba(255,255,255,.04)); box-shadow: 0 0 45px rgba(0,234,255,.25); transform: perspective(400px) rotateX(22deg) rotateY(-18deg); position: relative; z-index: 2;
+}
+.sat-body::before,
+.sat-body::after { content: ""; position: absolute; top: 18px; width: 70px; height: 55px; border: 1px solid var(--cyan); background: repeating-linear-gradient(90deg, rgba(0,234,255,.18) 0 4px, transparent 4px 9px);
+}
+.sat-body::before { right: 100%; margin-right: 8px; }
+.sat-body::after { left: 100%; margin-left: 8px; }
+.antenna { position: absolute; width: 100px; height: 100px; border: 2px solid var(--cyan); border-radius: 50%; left: 24px; top: -70px; border-left-color: transparent; transform: rotate(-25deg);
+}
+.signal { position: absolute; width: 220px; height: 120px; border-top: 1px solid var(--green); border-radius: 50%; top: -105px; left: 85px; transform: rotate(18deg); opacity: .55;
+}
+section { padding: 70px 0; border-top: 1px solid var(--line);
+}
+.section-head { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 26px;
+}
+.section-head h2 { font-size: 28px; letter-spacing: 3px;
+}
+.section-head p { color: var(--muted); font-size: 12px; } .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px;
+}
+.panel { background: var(--panel); border: 1px solid var(--line); box-shadow: inset 0 0 50px rgba(0,234,255,.025); backdrop-filter: blur(12px);
+}
+.panel:hover { border-color: rgba(0,234,255,.35); }
+.card { padding: 20px;
+}
+.span-3 { grid-column: span 3; }
+.span-4 { grid-column: span 4; }
+.span-5 { grid-column: span 5; }
+.span-6 { grid-column: span 6; }
+.span-7 { grid-column: span 7; }
+.span-8 { grid-column: span 8; }
+.span-12 { grid-column: span 12; } .metric { min-height: 150px;
+}
+.metric label { color: var(--muted); font-size: 11px; letter-spacing: 2px;
+}
+.metric strong { display: block; font-size: 34px; margin-top: 22px; color: #fff;
+}
+.metric em { color: var(--green); font-size: 11px; font-style: normal;
+}
+.map { min-height: 420px; position: relative; overflow: hidden; background: linear-gradient(rgba(0,234,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,234,255,.06) 1px, transparent 1px); background-size: 42px 42px;
+}
+.map::before { content: ""; position: absolute; inset: 12%; border: 1px solid rgba(0,234,255,.18); border-radius: 48% 52% 44% 56%; transform: rotate(-12deg);
+}
+.map::after { content: "N 12° 58' E 77° 35'"; position: absolute; right: 20px; bottom: 18px; color: var(--muted); font-size: 11px;
+}
+.blip { position: absolute; width: 9px; height: 9px; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 20px var(--cyan);
+}
+.blip::after { content: ""; position: absolute; inset: -15px; border: 1px solid var(--cyan); border-radius: 50%; animation: blip 2s infinite;
+}
+@keyframes blip { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.7); opacity: 0; }
+}
+.b1 { left: 26%; top: 44%; }
+.b2 { left: 63%; top: 29%; animation-delay: .5s; }
+.b3 { left: 76%; top: 67%; animation-delay: 1s; }
+.b4 { left: 42%; top: 72%; animation-delay: 1.5s; }
+.map-label { position: absolute; padding: 5px 8px; border: 1px solid var(--line); background: rgba(2,5,9,.7); color: var(--green); font-size: 10px;
+} .radar { height: 420px; position: relative;
+}
+.radar canvas { position: absolute; inset: 0;
+}
+.radar-info { position: absolute; left: 20px; top: 20px; font-size: 11px; line-height: 1.8; color: var(--muted);
+}
+.terminal { height: 500px; display: flex; flex-direction: column;
+}
+.terminal-top { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--muted);
+}
+.terminal-body { flex: 1; overflow: auto; padding: 18px; line-height: 1.65; font-size: 12px;
+}
+.line { margin-bottom: 3px; }
+.prompt { color: var(--green); }
+.command { color: #fff; }
+.info { color: var(--cyan); }
+.warn { color: var(--amber); }
+.err { color: var(--red); }
+.input-row { display: flex; border-top: 1px solid var(--line);
+}
+.input-row span { padding: 14px; color: var(--green); }
+#terminalInput { flex: 1; border: 0; outline: 0; background: transparent; color: #fff; padding: 14px 0;
+}
+.command-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+}
+.command-list button { text-align: left; font-size: 11px;
+}
+.table { width: 100%; border-collapse: collapse; font-size: 11px;
+}
+.table th,
+.table td { padding: 13px 10px; text-align: left; border-bottom: 1px solid var(--line);
+}
+.table th { color: var(--muted); font-weight: normal; }
+.ok { color: var(--green); }
+.alert { color: var(--red); }
+.progressbar { height: 5px; background: #0b1820; margin-top: 9px;
+}
+.progressbar span { display: block; height: 100%; width: var(--w); background: var(--cyan); box-shadow: 0 0 10px rgba(0,234,255,.5);
+}
+.scan { position: relative; height: 180px; overflow: hidden;
+}
+.scan::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--cyan); box-shadow: 0 0 18px var(--cyan); animation: scan 2.6s linear infinite;
+}
+@keyframes scan { to { top: 100%; } }
+.scan-grid { position: absolute; inset: 0; background: linear-gradient(rgba(0,234,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0,234,255,.08) 1px, transparent 1px); background-size: 20px 20px;
+}
+.footer { padding: 40px 0 80px; color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; gap: 20px;
+}
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(8px); display: none; place-items: center; z-index: 80;
+}
+.modal.open { display: grid; }
+.modal-box { width: min(600px, 90vw); padding: 24px; border: 1px solid var(--cyan); background: #03080d; box-shadow: 0 0 60px rgba(0,234,255,.18);
+}
+.modal-box h3 { margin-bottom: 15px; }
+.close { float: right; }
+.toast { position: fixed; right: 20px; bottom: 20px; padding: 14px 18px; background: #041018; border: 1px solid var(--green); color: var(--green); transform: translateY(120px); transition: .3s; z-index: 90;
+}
+.toast.show { transform: translateY(0); } @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } .satellite { height: 330px; } .span-3, .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; } .nav { display: none; } header { padding: 0 14px; }
+}
+@media (max-width: 560px) { .hero h1 { letter-spacing: -4px; } .hero { padding-top: 50px; } .sat-body { transform: scale(.75) perspective(400px) rotateX(22deg) rotateY(-18deg); } .footer { flex-direction: column; }
+} /* ===== VK SATELLITE EXTENDED UI ===== */
+:root{ --blue:#1976ff; --purple:#8b5cf6; --dark:#010307; --glass:rgba(4,10,17,.72); --border:rgba(0,234,255,.12);
+}
+*{scrollbar-width:thin;scrollbar-color:var(--cyan) #020509}
+*::-webkit-scrollbar{width:7px}
+*::-webkit-scrollbar-track{background:#020509}
+*::-webkit-scrollbar-thumb{background:var(--cyan)}
+body{selection-background:#00eaff}
+::selection{background:rgba(0,234,255,.25);color:#fff}
+.glitch{position:relative;display:inline-block}
+.glitch::before,.glitch::after{ content:attr(data-text);position:absolute;inset:0;pointer-events:none
+}
+.glitch::before{color:#ff3158;transform:translate(2px,0);clip-path:inset(0 0 55% 0);animation:glitchA 2s infinite}
+.glitch::after{color:#00ff9d;transform:translate(-2px,0);clip-path:inset(55% 0 0 0);animation:glitchB 1.7s infinite}
+@keyframes glitchA{0%,90%,100%{opacity:0}92%{opacity:.7;transform:translate(3px,-1px)}95%{opacity:.3;transform:translate(-2px,1px)}}
+@keyframes glitchB{0%,87%,100%{opacity:0}89%{opacity:.7;transform:translate(-3px,1px)}93%{opacity:.3;transform:translate(2px,-1px)}}
+.hud{ position:fixed;left:18px;bottom:18px;z-index:40; width:250px;padding:12px;border:1px solid var(--border); background:rgba(2,7,12,.7);backdrop-filter:blur(10px); font-size:10px;pointer-events:none
+}
+.hud-row{display:flex;justify-content:space-between;padding:4px 0;color:var(--muted)}
+.hud-row b{color:var(--cyan)}
+.signal-wave{height:42px;display:flex;align-items:center;gap:2px;margin-top:8px}
+.signal-wave i{width:3px;background:var(--green);animation:wave .8s infinite ease-in-out}
+.signal-wave i:nth-child(2n){animation-delay:.12s}
+.signal-wave i:nth-child(3n){animation-delay:.22s}
+@keyframes wave{50%{height:28px;opacity:.4}}
+.data-strip{ display:grid;grid-template-columns:repeat(6,1fr);gap:1px; border:1px solid var(--border);background:var(--border);margin-top:18px
+}
+.data-strip div{background:rgba(2,8,13,.8);padding:12px}
+.data-strip small{display:block;color:var(--muted);font-size:9px}
+.data-strip b{display:block;color:#fff;margin-top:6px}
+.alert-banner{ display:none;margin:0 0 16px;padding:12px 16px; border:1px solid var(--red);color:var(--red); background:rgba(255,49,88,.06);animation:alertPulse 1s infinite
+}
+.alert-banner.active{display:block}
+@keyframes alertPulse{50%{box-shadow:0 0 30px rgba(255,49,88,.16)}}
+.cmd-history{max-height:90px;overflow:auto;border-bottom:1px solid var(--border);padding:8px 16px;color:var(--muted);font-size:10px}
+.matrix{ position:relative;overflow:hidden;height:160px; background:linear-gradient(rgba(0,255,157,.05) 1px,transparent 1px), linear-gradient(90deg,rgba(0,255,157,.05) 1px,transparent 1px); background-size:18px 18px
+}
+.matrix::after{ content:"01 10 01 11 00 10 01 00 11 01 10 00 01 11"; position:absolute;inset:0;color:rgba(0,255,157,.3); font-size:11px;line-height:2.1;word-spacing:13px; animation:matrixMove 5s linear infinite
+}
+@keyframes matrixMove{from{transform:translateY(-20px)}to{transform:translateY(40px)}}
+.core{ width:110px;height:110px;border-radius:50%;margin:22px auto; border:1px solid var(--cyan);box-shadow:0 0 25px rgba(0,234,255,.2),inset 0 0 25px rgba(0,234,255,.1); display:grid;place-items:center;position:relative
+}
+.core::before,.core::after{content:"";position:absolute;border:1px solid var(--cyan);border-radius:50%;inset:10px;animation:coreSpin 4s linear infinite}
+.core::after{inset:22px;border-color:var(--green);animation-direction:reverse;animation-duration:2s}
+@keyframes coreSpin{to{transform:rotate(360deg)}}
+.core span{font-size:10px;color:var(--green);z-index:2}
+.meter{height:4px;background:#09151d;margin-top:8px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);width:var(--value)}
+.stat-list{list-style:none}
+.stat-list li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px}
+.stat-list li span:first-child{color:var(--muted)}
+.stat-list li span:last-child{color:#fff}
+.big-number{font-size:46px;color:#fff;letter-spacing:-2px}
+.tag{display:inline-block;padding:3px 7px;border:1px solid var(--border);font-size:9px;color:var(--green)}
+.console-buttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.console-buttons button{font-size:10px;padding:7px 9px}
+#particles{position:fixed;inset:0;z-index:-1;pointer-events:none} </style>
+</head>
+<body> <canvas id="space"></canvas> <div class="boot" id="boot"> <div class="boot-box"> <div class="eyebrow">VK // SECURE VISUALIZATION NODE</div> <div class="boot-title">VK SATELLITE</div> <div class="boot-log" id="bootLog"></div> <div class="progress"><span></span></div> </div>
+</div> <header> <a class="brand" href="#top"> <div class="brand-mark"></div> <div> <strong>VK SATELLITE</strong> <small>ORBITAL INTELLIGENCE // SIMULATION</small> </div> </a> <nav class="nav"> <a href="#overview">OVERVIEW</a> <a href="#orbit">ORBIT</a> <a href="#radar">RADAR</a> <a href="#terminal">TERMINAL</a> <a href="#telemetry">TELEMETRY</a>
+<a href="#advanced">CONTROL</a>
+<a href="#security">SECURITY</a>
+<a href="#analytics">ANALYTICS</a> </nav> <div class="status"><i class="dot"></i>LINK ONLINE</div>
+</header> <main id="top"> <section class="hero"> <div> <div class="eyebrow">CLASSIFIED // VK-ORBITAL-01</div> <h1>VK<br><span>SATELLITE</span></h1> <p> A fictional satellite operations interface built for visual storytelling, UI experimentation and cybersecurity-themed demos. Every terminal action on this page is simulated locally in JavaScript. </p> <div class="hero-actions"> <button class="primary" onclick="startSimulation()">INITIALIZE SIMULATION</button> <button onclick="scrollToTerminal()">OPEN TERMINAL</button> <button onclick="openModal()">MISSION DATA</button> </div> </div> <div class="satellite"> <div class="orbit"></div> <div class="orbit two"></div> <div class="orbit three"></div> <div class="sat-body"> <div class="antenna"></div> <div class="signal"></div> </div> </div>
+</section> <section id="overview"> <div class="section-head"> <div> <div class="eyebrow">01 // SYSTEM OVERVIEW</div> <h2>ORBITAL COMMAND DECK</h2> </div> <p id="clock">00:00:00 UTC</p> </div> <div class="grid"> <div class="panel card metric span-3"> <label>ALTITUDE</label> <strong id="altitude">408.21</strong> <em>KM // STABLE</em> </div> <div class="panel card metric span-3"> <label>VELOCITY</label> <strong id="velocity">7.66</strong> <em>KM/S // NOMINAL</em> </div> <div class="panel card metric span-3"> <label>SIGNAL</label> <strong id="signalMetric">98.4</strong> <em>% // ENCRYPTED</em> </div> <div class="panel card metric span-3"> <label>POWER</label> <strong id="power">87</strong> <em>% // OPTIMAL</em> </div> </div>
+</section> <section id="orbit"> <div class="section-head"> <div> <div class="eyebrow">02 // ORBITAL TRACKING</div> <h2>GLOBAL TRACK</h2> </div> <p>SIMULATION DATA // REFRESH 1S</p> </div> <div class="grid"> <div class="panel map span-8"> <div class="blip b1"></div> <div class="blip b2"></div> <div class="blip b3"></div> <div class="blip b4"></div> <div class="map-label" style="left:24%;top:36%">NODE A-17</div> <div class="map-label" style="left:60%;top:20%">RELAY B-09</div> <div class="map-label" style="left:70%;top:72%">GROUND C-04</div> <div class="map-label" style="left:36%;top:76%">BEACON D-21</div> </div> <div class="panel card span-4"> <div class="eyebrow">ORBIT PARAMETERS</div> <table class="table"> <tr><td>PERIGEE</td><td>401.8 KM</td></tr> <tr><td>APOGEE</td><td>416.2 KM</td></tr> <tr><td>INCLINATION</td><td>51.64°</td></tr> <tr><td>PERIOD</td><td>92.7 MIN</td></tr> <tr><td>ORBIT</td><td>LEO</td></tr> <tr><td>MODE</td><td class="ok">NOMINAL</td></tr> </table> <div class="scan" style="margin-top:18px"> <div class="scan-grid"></div> </div> </div> </div>
+</section> <section id="radar"> <div class="section-head"> <div> <div class="eyebrow">03 // SPECTRAL SENSOR</div> <h2>RADAR / OBJECT FIELD</h2> </div> <p>LOCAL VISUALIZATION ONLY</p> </div> <div class="grid"> <div class="panel radar span-7"> <canvas id="radarCanvas"></canvas> <div class="radar-info"> RANGE: 12,000 KM<br> MODE: PASSIVE<br> OBJECTS: <span id="objectCount">14</span><br> SWEEP: ACTIVE </div> </div> <div class="panel card span-5"> <div class="eyebrow">TRACKED OBJECTS</div> <table class="table"> <thead> <tr><th>ID</th><th>CLASS</th><th>RANGE</th><th>STATE</th></tr> </thead> <tbody id="objectTable"></tbody> </table> </div> </div>
+</section> <section id="terminal"> <div class="section-head"> <div> <div class="eyebrow">04 // COMMAND INTERFACE</div> <h2>VK TERMINAL</h2> </div> <p>FICTIONAL / NON-DESTRUCTIVE</p> </div> <div class="grid"> <div class="panel terminal span-8"> <div class="terminal-top"> <span>VK-TERM v4.7.1</span> <span id="terminalStatus">SESSION: LOCAL</span> </div> <div class="terminal-body" id="terminalOutput"></div> <div class="input-row"> <span>vk@orbit:~$</span> <input id="terminalInput" autocomplete="off" spellcheck="false" placeholder="type help"> </div> </div> <div class="panel card span-4"> <div class="eyebrow">AVAILABLE SIMULATION COMMANDS</div> <div class="command-list"> <button onclick="runCommand('help')">help</button> <button onclick="runCommand('status')">status</button> <button onclick="runCommand('orbit')">orbit</button> <button onclick="runCommand('telemetry')">telemetry</button> <button onclick="runCommand('radar')">radar</button> <button onclick="runCommand('scan')">scan</button> <button onclick="runCommand('whoami')">whoami</button> <button onclick="runCommand('clear')">clear</button> </div> <div style="margin-top:25px"> <div class="eyebrow">SAFETY BOUNDARY</div> <p style="color:var(--muted);font-size:11px;line-height:1.8"> Commands are visual simulations only. No real satellites, systems, networks or devices are contacted. </p> </div> </div> </div>
+</section> <section id="telemetry"> <div class="section-head"> <div> <div class="eyebrow">05 // LIVE TELEMETRY</div> <h2>SYSTEM HEALTH</h2> </div> <p>AUTOMATED LOCAL FEED</p> </div> <div class="grid"> <div class="panel card span-4"> <div class="eyebrow">THERMAL CORE</div> <h3 id="temp">21.8°C</h3> <div class="progressbar"><span id="tempBar" style="--w:42%"></span></div> <p style="color:var(--muted);font-size:11px;margin-top:12px">Within operational envelope.</p> </div> <div class="panel card span-4"> <div class="eyebrow">DATA BUS</div> <h3 id="dataRate">842 MB/s</h3> <div class="progressbar"><span id="dataBar" style="--w:68%"></span></div> <p style="color:var(--muted);font-size:11px;margin-top:12px">Encrypted demo stream.</p> </div> <div class="panel card span-4"> <div class="eyebrow">ATTITUDE CONTROL</div> <h3 id="attitude">0.004°</h3> <div class="progressbar"><span id="attBar" style="--w:14%"></span></div> <p style="color:var(--muted);font-size:11px;margin-top:12px">Precision lock engaged.</p> </div> <div class="panel card span-12"> <div class="eyebrow">EVENT STREAM</div> <table class="table"> <thead> <tr> <th>TIME</th> <th>SUBSYSTEM</th> <th>EVENT</th> <th>STATUS</th> </tr> </thead> <tbody id="eventTable"></tbody> </table> </div> </div>
+</section> <footer class="footer"> <div>VK SATELLITE // UI LAB</div> <div>FICTIONAL SIMULATION // NO EXTERNAL NETWORK ACCESS</div> <div id="footerTime">LOCAL NODE</div>
+</footer> <div class="hud" id="hud"> <div class="hud-row"><span>UPLINK</span><b id="hudUplink">98%</b></div> <div class="hud-row"><span>PACKETS</span><b id="hudPackets">000000</b></div> <div class="hud-row"><span>LATENCY</span><b id="hudLatency">42ms</b></div> <div class="hud-row"><span>CORE</span><b id="hudCore">ONLINE</b></div> <div class="signal-wave" id="signalWave"></div>
+</div> <section id="advanced"> <div class="section-head"> <div> <div class="eyebrow">06 // ADVANCED CONTROL</div> <h2>MISSION SYSTEMS</h2> </div> <p>LOCAL CONTROL SIMULATION</p> </div> <div class="alert-banner" id="alertBanner"> ⚠ ALERT MODE // SIMULATED ANOMALY DETECTED // NO EXTERNAL ACTION </div> <div class="grid"> <div class="panel card span-4"> <div class="eyebrow">CORE STATUS</div> <div class="core"><span>VK-CORE</span></div> <ul class="stat-list"> <li><span>PROCESSOR</span><span>94%</span></li> <li><span>MEMORY</span><span>62%</span></li> <li><span>STORAGE</span><span>71%</span></li> <li><span>SECURE MODE</span><span class="ok">ON</span></li> </ul> </div> <div class="panel card span-4"> <div class="eyebrow">SIGNAL ANALYSIS</div> <div class="big-number" id="signalBig">98.4%</div> <div class="meter"><span id="signalMeter" style="--value:98%"></span></div> <br> <ul class="stat-list"> <li><span>FREQUENCY</span><span>8.42 GHz</span></li> <li><span>NOISE</span><span>-71 dB</span></li> <li><span>LATENCY</span><span>42 ms</span></li> <li><span>CHANNEL</span><span class="ok">SECURE</span></li> </ul> </div> <div class="panel card span-4"> <div class="eyebrow">MISSION CLOCK</div> <div class="big-number" id="missionSeconds">000000</div> <div class="tag">LOCAL SIMULATION TIMER</div> <br><br> <ul class="stat-list"> <li><span>MISSION</span><span>VK-01</span></li> <li><span>PHASE</span><span>ORBITAL</span></li> <li><span>STATUS</span><span class="ok">ACTIVE</span></li> </ul> </div> <div class="panel card span-6"> <div class="eyebrow">DIGITAL CORE MATRIX</div> <div class="matrix"></div> </div> <div class="panel card span-6"> <div class="eyebrow">LOCAL CONSOLE</div> <p style="color:var(--muted);font-size:11px;line-height:1.8"> Interactive controls below change only the visual simulation state. </p> <div class="console-buttons"> <button onclick="toggleAlert()">ALERT MODE</button> <button onclick="boostSignal()">BOOST SIGNAL</button> <button onclick="simulatePacketBurst()">PACKET BURST</button> <button onclick="runCommand('scan')">PASSIVE SCAN</button> <button onclick="runCommand('network')">NETWORK MAP</button> </div> </div> </div> <div class="data-strip"> <div><small>CPU</small><b id="cpuStrip">94%</b></div> <div><small>RAM</small><b id="ramStrip">62%</b></div> <div><small>UPLINK</small><b id="uplinkStrip">98%</b></div> <div><small>PACKETS</small><b id="packetStrip">000000</b></div> <div><small>LATENCY</small><b id="latencyStrip">42ms</b></div> <div><small>MODE</small><b>LOCAL</b></div> </div>
+</section> <section id="security"> <div class="section-head"> <div> <div class="eyebrow">07 // SECURITY MONITOR</div> <h2>DEFENSE GRID</h2> </div> <p>DEMO ENVIRONMENT</p> </div> <div class="grid"> <div class="panel card span-3 metric"> <label>AUTH STATUS</label> <strong class="ok">PASS</strong> <em>LOCAL SESSION</em> </div> <div class="panel card span-3 metric"> <label>INTEGRITY</label> <strong>100%</strong> <em>CHECKSUM VALID</em> </div> <div class="panel card span-3 metric"> <label>THREATS</label> <strong id="threatCount">00</strong> <em>SIMULATED</em> </div> <div class="panel card span-3 metric"> <label>FIREWALL</label> <strong class="ok">ACTIVE</strong> <em>LOCAL ONLY</em> </div> <div class="panel card span-12"> <div class="eyebrow">SECURITY EVENT FEED</div> <table class="table"> <thead> <tr><th>TIME</th><th>MODULE</th><th>EVENT</th><th>RESULT</th></tr> </thead> <tbody id="securityTable"></tbody> </table> </div> </div>
+</section> <section id="analytics"> <div class="section-head"> <div> <div class="eyebrow">08 // DATA ANALYTICS</div> <h2>MISSION ANALYTICS</h2> </div> <p>GENERATED LOCALLY</p> </div> <div class="grid"> <div class="panel card span-8"> <div class="eyebrow">TELEMETRY GRAPH</div> <canvas id="telemetryGraph" style="width:100%;height:260px"></canvas> </div> <div class="panel card span-4"> <div class="eyebrow">LIVE VALUES</div> <ul class="stat-list"> <li><span>ALTITUDE</span><span id="anaAltitude">408.21</span></li> <li><span>VELOCITY</span><span id="anaVelocity">7.66</span></li> <li><span>SIGNAL</span><span id="anaSignal">98.4%</span></li> <li><span>POWER</span><span id="anaPower">87%</span></li> <li><span>TEMP</span><span id="anaTemp">21.8°C</span></li> <li><span>DATA RATE</span><span id="anaData">842 MB/s</span></li> </ul> </div> </div>
+</section> </main> <div class="modal" id="missionModal"> <div class="modal-box"> <button class="close" onclick="closeModal()">×</button> <div class="eyebrow">MISSION FILE // VK-01</div> <h3>PROJECT NIGHT ORBIT</h3> <p style="color:var(--muted);line-height:1.9"> VK Satellite is a front-end concept for a fictional orbital intelligence platform. It combines a space scene, orbital visualization, radar animation, telemetry cards and a terminal emulator. </p> <br> <p style="color:var(--green);font-size:12px"> DESIGN PRINCIPLE: MAKE THE INTERFACE FEEL LIKE A MOVIE. </p> </div>
+</div> <div class="toast" id="toast">SIMULATION EVENT</div> <script>
+"use strict"; const $ = (selector) => document.querySelector(selector); const bootMessages = [ "[BOOT] Initializing VK orbital kernel...", "[BOOT] Loading telemetry renderer...", "[BOOT] Calibrating fictional sensor matrix...", "[BOOT] Mounting local command interface...", "[BOOT] Establishing simulated secure session...", "[BOOT] Loading orbital visualization...", "[BOOT] All systems ready."
+]; const terminalCommands = { help() { return [ ["info", "AVAILABLE COMMANDS"], ["info", "help show this command list"], ["info", "status display simulated system status"], ["info", "orbit display orbital parameters"], ["info", "telemetry display live demo telemetry"], ["info", "radar render radar status"], ["info", "scan run a fictional passive scan"], ["info", "whoami display local simulation identity"], ["info", "clear clear terminal output"], ["warn", "All commands are local UI simulations."] ]; }, status() { return [ ["info", "VK SATELLITE STATUS"], ["ok", "CORE............. ONLINE"], ["ok", "POWER............ 87%"], ["ok", "LINK............. ENCRYPTED"], ["ok", "ATTITUDE......... LOCKED"], ["ok", "ORBIT............ NOMINAL"], ["ok", "RADAR............ PASSIVE"] ]; }, orbit() { return [ ["info", "ORBITAL PARAMETERS"], ["command", "ALTITUDE......... 408.21 KM"], ["command", "VELOCITY......... 7.66 KM/S"], ["command", "INCLINATION...... 51.64°"], ["command", "PERIOD........... 92.7 MIN"], ["command", "CLASS............. LEO"] ]; }, telemetry() { return [ ["info", "LIVE TELEMETRY"], ["command", "THERMAL.......... 21.8°C"], ["command", "DATA BUS......... 842 MB/S"], ["command", "ATTITUDE......... 0.004°"], ["command", "SIGNAL........... 98.4%"] ]; }, radar() { return [ ["info", "RADAR MODULE"], ["command", "MODE............. PASSIVE"], ["command", "RANGE............ 12,000 KM"], ["command", "SWEEP............ ACTIVE"], ["ok", "OBJECT FIELD..... NOMINAL"] ]; }, scan() { return [ ["info", "STARTING FICTIONAL PASSIVE SCAN..."], ["command", "Sector 01........ CLEAR"], ["command", "Sector 02........ CLEAR"], ["command", "Sector 03........ 02 OBJECTS"], ["command", "Sector 04........ CLEAR"], ["ok", "SCAN COMPLETE // NO ACTION TAKEN"] ]; }, whoami() { return [ ["info", "LOCAL SIMULATION IDENTITY"], ["command", "vk@orbit"], ["command", "ROLE............. VISUAL OPERATOR"], ["command", "ACCESS........... DEMO"], ["warn", "NO EXTERNAL ACCESS"] ]; }
+}; function terminalPrint(type, text) { const output = $("#terminalOutput"); const line = document.createElement("div"); line.className = "line " + type; line.textContent = text; output.appendChild(line); output.scrollTop = output.scrollHeight;
+} function runCommand(raw) { const command = String(raw || "").trim().toLowerCase(); if (!command) return; terminalPrint("prompt", "vk@orbit:~$ " + command); if (command === "clear") { $("#terminalOutput").innerHTML = ""; return; } if (terminalCommands[command]) { terminalCommands[command]().forEach(([type, text]) => { terminalPrint(type, text); }); } else { terminalPrint("err", "Unknown command: " + command); terminalPrint("info", 'Type "help" for available simulation commands.'); }
+} $("#terminalInput").addEventListener("keydown", (event) => { if (event.key === "Enter") { runCommand(event.target.value); event.target.value = ""; }
+}); function scrollToTerminal() { document.querySelector("#terminal").scrollIntoView({ behavior: "smooth" }); setTimeout(() => $("#terminalInput").focus(), 700);
+} function openModal() { $("#missionModal").classList.add("open");
+} function closeModal() { $("#missionModal").classList.remove("open");
+} $("#missionModal").addEventListener("click", (event) => { if (event.target.id === "missionModal") closeModal();
+}); function showToast(message) { const toast = $("#toast"); toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2200);
+} function startSimulation() { showToast("VK ORBITAL SIMULATION INITIALIZED"); runCommand("status"); document.querySelector("#terminal").scrollIntoView({ behavior: "smooth" });
+} function updateClock() { const now = new Date(); const time = now.toISOString().split("T")[1].split(".")[0] + " UTC"; $("#clock").textContent = time; $("#footerTime").textContent = "NODE TIME // " + time;
+} function randomizeTelemetry() { const altitude = (408.21 + (Math.random() - .5) * .18).toFixed(2); const velocity = (7.66 + (Math.random() - .5) * .02).toFixed(2); const signal = (98.4 + (Math.random() - .5) * 1.1).toFixed(1); const power = Math.max(82, Math.min(94, 87 + (Math.random() - .5) * 2)); $("#altitude").textContent = altitude; $("#velocity").textContent = velocity; $("#signalMetric").textContent = signal; $("#power").textContent = power.toFixed(0); const temp = (21.8 + (Math.random() - .5) * 1.8).toFixed(1); const data = Math.round(842 + (Math.random() - .5) * 80); const attitude = (0.004 + Math.random() * .003).toFixed(3); $("#temp").textContent = temp + "°C"; $("#dataRate").textContent = data + " MB/s"; $("#attitude").textContent = attitude + "°"; $("#tempBar").style.setProperty("--w", Math.round(40 + Math.random() * 8) + "%"); $("#dataBar").style.setProperty("--w", Math.round(60 + Math.random() * 18) + "%"); $("#attBar").style.setProperty("--w", Math.round(10 + Math.random() * 8) + "%");
+} const objects = [ ["VX-014", "DEBRIS", "2,412 KM", "TRACKED"], ["OR-221", "RELAY", "4,810 KM", "NOMINAL"], ["AX-902", "UNKNOWN", "7,104 KM", "WATCH"], ["DS-087", "DEBRIS", "1,920 KM", "TRACKED"], ["VK-G04", "GROUND", "9,201 KM", "LINKED"], ["TR-551", "RELAY", "5,382 KM", "NOMINAL"], ["NX-008", "DEBRIS", "3,774 KM", "TRACKED"], ["QL-120", "UNKNOWN", "8,009 KM", "WATCH"]
+]; function populateObjects() { const tbody = $("#objectTable"); tbody.innerHTML = ""; objects.forEach((object) => { const row = document.createElement("tr"); row.innerHTML = "<td>" + object[0] + "</td>" + "<td>" + object[1] + "</td>" + "<td>" + object[2] + "</td>" + "<td class='" + (object[3] === "WATCH" ? "alert" : "ok") + "'>" + object[3] + "</td>"; tbody.appendChild(row); });
+} const eventNames = [ ["ATTITUDE", "Precision correction completed", "NOMINAL"], ["POWER", "Solar array output stabilized", "NOMINAL"], ["LINK", "Ground relay heartbeat received", "SECURE"], ["RADAR", "Passive object sweep completed", "NOMINAL"], ["THERMAL", "Core temperature recalculated", "NOMINAL"], ["DATA", "Telemetry packet batch sealed", "SECURE"]
+]; function populateEvents() { const tbody = $("#eventTable"); tbody.innerHTML = ""; const now = new Date(); eventNames.forEach((event, index) => { const row = document.createElement("tr"); const t = new Date(now.getTime() - index * 9700); const time = t.toISOString().split("T")[1].split(".")[0]; row.innerHTML = "<td>" + time + "</td>" + "<td>" + event[0] + "</td>" + "<td>" + event[1] + "</td>" + "<td class='ok'>" + event[2] + "</td>"; tbody.appendChild(row); });
+} function bootSequence() { const log = $("#bootLog"); bootMessages.forEach((message, index) => { setTimeout(() => { const div = document.createElement("div"); div.textContent = message; log.appendChild(div); }, index * 420); }); setTimeout(() => { $("#boot").classList.add("hide"); runCommand("help"); }, 3400);
+} const space = $("#space");
+const spaceCtx = space.getContext("2d");
+let stars = []; function resizeSpace() { space.width = window.innerWidth * devicePixelRatio; space.height = window.innerHeight * devicePixelRatio; spaceCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0); stars = Array.from({ length: 220 }, () => ({ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight, r: Math.random() * 1.4, speed: Math.random() * .15 + .02, a: Math.random() * .7 + .2 }));
+} function drawSpace() { spaceCtx.clearRect(0, 0, window.innerWidth, window.innerHeight); stars.forEach((star) => { star.y += star.speed; if (star.y > window.innerHeight) { star.y = 0; star.x = Math.random() * window.innerWidth; } spaceCtx.globalAlpha = star.a; spaceCtx.fillStyle = "#bdefff"; spaceCtx.beginPath(); spaceCtx.arc(star.x, star.y, star.r, 0, Math.PI * 2); spaceCtx.fill(); }); spaceCtx.globalAlpha = 1; requestAnimationFrame(drawSpace);
+} const radarCanvas = $("#radarCanvas");
+const radarCtx = radarCanvas.getContext("2d");
+let radarAngle = 0;
+let radarTargets = Array.from({ length: 14 }, () => ({ a: Math.random() * Math.PI * 2, r: .18 + Math.random() * .7, phase: Math.random() * Math.PI * 2
+})); function resizeRadar() { const rect = radarCanvas.parentElement.getBoundingClientRect(); radarCanvas.width = rect.width * devicePixelRatio; radarCanvas.height = rect.height * devicePixelRatio; radarCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+} function drawRadar() { const w = radarCanvas.parentElement.clientWidth; const h = radarCanvas.parentElement.clientHeight; const cx = w / 2; const cy = h / 2; const radius = Math.min(w, h) * .36; radarCtx.clearRect(0, 0, w, h); radarCtx.strokeStyle = "rgba(0,234,255,.18)"; radarCtx.lineWidth = 1; for (let i = 1; i <= 4; i++) { radarCtx.beginPath(); radarCtx.arc(cx, cy, radius * i / 4, 0, Math.PI * 2); radarCtx.stroke(); } for (let i = 0; i < 8; i++) { const angle = i * Math.PI / 4; radarCtx.beginPath(); radarCtx.moveTo(cx, cy); radarCtx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius); radarCtx.stroke(); } radarCtx.save(); radarCtx.translate(cx, cy); radarCtx.rotate(radarAngle); const gradient = radarCtx.createLinearGradient(0, 0, radius, 0); gradient.addColorStop(0, "rgba(0,234,255,.42)"); gradient.addColorStop(1, "rgba(0,234,255,0)"); radarCtx.fillStyle = gradient; radarCtx.beginPath(); radarCtx.moveTo(0, 0); radarCtx.arc(0, 0, radius, -.16, .16); radarCtx.closePath(); radarCtx.fill(); radarCtx.restore(); radarTargets.forEach((target) => { const x = cx + Math.cos(target.a) * radius * target.r; const y = cy + Math.sin(target.a) * radius * target.r; const pulse = 2 + Math.sin(Date.now() / 350 + target.phase) * 1.5; radarCtx.fillStyle = "#00ff9d"; radarCtx.shadowBlur = 12; radarCtx.shadowColor = "#00ff9d"; radarCtx.beginPath(); radarCtx.arc(x, y, Math.max(1.5, pulse), 0, Math.PI * 2); radarCtx.fill(); radarCtx.shadowBlur = 0; }); radarAngle += .012; requestAnimationFrame(drawRadar);
+} window.addEventListener("resize", () => { resizeSpace(); resizeRadar();
+}); populateObjects();
+populateEvents();
+resizeSpace();
+resizeRadar();
+drawSpace();
+drawRadar();
+bootSequence();
+updateClock();
+setInterval(updateClock, 1000);
+setInterval(randomizeTelemetry, 1400);
+setInterval(populateEvents, 7000); document.addEventListener("keydown", (event) => { if (event.key === "/" && document.activeElement !== $("#terminalInput")) { event.preventDefault(); scrollToTerminal(); }
+}); console.log("%cVK SATELLITE", "color:#00eaff;font-size:28px;font-weight:bold");
+console.log("%cFictional interface. Local simulation only.", "color:#00ff9d"); /* ===== EXTENDED LOCAL SIMULATION ENGINE ===== */ let packetCount = 0;
+let missionTick = 0;
+let alertActive = false;
+let signalValue = 98.4; function initSignalWave(){ const wave = document.getElementById("signalWave"); for(let i=0;i<38;i++){ const bar = document.createElement("i"); bar.style.height = (6 + Math.random()*28) + "px"; wave.appendChild(bar); }
+} function updateAdvancedHUD(){ packetCount += Math.floor(Math.random()*19)+4; missionTick++; const latency = 38 + Math.floor(Math.random()*13); const uplink = Math.max(91, Math.min(100, Math.round(signalValue))); document.getElementById("hudPackets").textContent = String(packetCount).padStart(6,"0"); document.getElementById("packetStrip").textContent = String(packetCount).padStart(6,"0"); document.getElementById("latencyStrip").textContent = latency + "ms"; document.getElementById("hudLatency").textContent = latency + "ms"; document.getElementById("hudUplink").textContent = uplink + "%"; document.getElementById("uplinkStrip").textContent = uplink + "%"; document.getElementById("missionSeconds").textContent = String(missionTick).padStart(6,"0"); document.querySelectorAll(".signal-wave i").forEach(bar=>{ bar.style.height = (5 + Math.random()*32) + "px"; });
+} function toggleAlert(){ alertActive = !alertActive; document .getElementById("alertBanner") .classList.toggle("active",alertActive); document.getElementById("threatCount").textContent = alertActive ? "01" : "00"; showToast( alertActive ? "SIMULATED ALERT MODE ENABLED" : "ALERT MODE CLEARED" ); terminalPrint( alertActive ? "err" : "ok", alertActive ? "SIMULATION ALERT ENABLED // NO ACTION TAKEN" : "SIMULATION ALERT CLEARED" );
+} function boostSignal(){ signalValue = Math.min(100,signalValue + 1.2); document.getElementById("signalBig").textContent = signalValue.toFixed(1) + "%"; document .getElementById("signalMeter") .style.setProperty("--value",signalValue + "%"); showToast("SIGNAL SIMULATION BOOSTED"); terminalPrint( "ok", "SIGNAL OPTIMIZATION COMPLETE // LOCAL SIMULATION" );
+} function simulatePacketBurst(){ packetCount += 500 + Math.floor(Math.random()*1000); showToast("SIMULATED PACKET BURST"); terminalPrint("info","PACKET BURST SIMULATION"); terminalPrint( "command", "PACKETS........ " + packetCount.toLocaleString() ); terminalPrint( "ok", "LOCAL STREAM COMPLETE" );
+} const securityEvents = [ ["AUTH","Session token verified","PASS"], ["FIREWALL","Local boundary verified","ACTIVE"], ["CORE","Integrity checksum validated","PASS"], ["LINK","Encrypted demo channel verified","SECURE"], ["RADAR","Passive scan policy verified","PASS"], ["SYSTEM","No external connections detected","PASS"]
+]; function populateSecurity(){ const tbody = document.getElementById("securityTable"); tbody.innerHTML = ""; const now = new Date(); securityEvents.forEach((event,index)=>{ const row = document.createElement("tr"); const time = new Date( now.getTime() - index*8300 ).toISOString().split("T")[1].split(".")[0]; row.innerHTML = "<td>"+time+"</td>"+ "<td>"+event[0]+"</td>"+ "<td>"+event[1]+"</td>"+ "<td class='ok'>"+event[2]+"</td>"; tbody.appendChild(row); });
+} const telemetryGraph = document.getElementById("telemetryGraph"); const graphCtx = telemetryGraph.getContext("2d"); let graphData = Array.from( {length:80}, ()=>45+Math.random()*45 ); function resizeGraph(){ const rect = telemetryGraph.getBoundingClientRect(); telemetryGraph.width = rect.width * devicePixelRatio; telemetryGraph.height = rect.height * devicePixelRatio; graphCtx.setTransform( devicePixelRatio, 0, 0, devicePixelRatio, 0, 0 );
+} function drawGraph(){ const w = telemetryGraph.clientWidth; const h = telemetryGraph.clientHeight; graphCtx.clearRect(0,0,w,h); graphCtx.strokeStyle = "rgba(0,234,255,.08)"; for(let y=20;y<h;y+=40){ graphCtx.beginPath(); graphCtx.moveTo(0,y); graphCtx.lineTo(w,y); graphCtx.stroke(); } for(let x=0;x<w;x+=60){ graphCtx.beginPath(); graphCtx.moveTo(x,0); graphCtx.lineTo(x,h); graphCtx.stroke(); } graphCtx.beginPath(); graphData.forEach((value,index)=>{ const x = index/(graphData.length-1)*w; const y = h-(value/100*h*.8)-20; if(index===0){ graphCtx.moveTo(x,y); }else{ graphCtx.lineTo(x,y); } }); graphCtx.strokeStyle = "#00eaff"; graphCtx.lineWidth = 2; graphCtx.shadowBlur = 12; graphCtx.shadowColor = "#00eaff"; graphCtx.stroke(); graphCtx.shadowBlur = 0; graphData.shift(); graphData.push( 45+Math.random()*45 ); requestAnimationFrame(drawGraph);
+} function updateAnalytics(){ const ids = { anaAltitude:"altitude", anaVelocity:"velocity", anaSignal:"signalMetric", anaPower:"power", anaTemp:"temp", anaData:"dataRate" }; Object.entries(ids).forEach( ([target,source])=>{ const sourceEl = document.getElementById(source); const targetEl = document.getElementById(target); if(sourceEl && targetEl){ targetEl.textContent = sourceEl.textContent; } } ); const cpu = 70 + Math.floor(Math.random()*28); const ram = 50 + Math.floor(Math.random()*25); document.getElementById("cpuStrip") .textContent = cpu + "%"; document.getElementById("ramStrip") .textContent = ram + "%";
+} window.addEventListener("resize",resizeGraph); initSignalWave();
+populateSecurity();
+resizeGraph();
+drawGraph(); setInterval(updateAdvancedHUD,1000);
+setInterval(updateAnalytics,1400);
+setInterval(populateSecurity,6000); const originalRandomizeTelemetry = randomizeTelemetry; randomizeTelemetry = function(){ originalRandomizeTelemetry(); signalValue = parseFloat( document.getElementById( "signalMetric" ).textContent ); const signalBig = document.getElementById("signalBig"); if(signalBig){ signalBig.textContent = signalValue.toFixed(1)+"%"; } const signalMeter = document.getElementById("signalMeter"); if(signalMeter){ signalMeter.style.setProperty( "--value", signalValue+"%" ); }
+}; document.addEventListener( "keydown", event=>{ if(event.ctrlKey && event.key==="l"){ event.preventDefault(); document.getElementById( "terminalInput" ).focus(); document.getElementById( "terminalInput" ).select(); } }
+); </script> </body>
+</html>
+
+<!--
+VK SATELLITE EXTENDED IMPLEMENTATION NOTES
+The following reference lines are intentionally comments.
+They document the UI architecture and do not execute code.
+REFERENCE 0001: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0002: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0003: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0004: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0005: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0006: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0007: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0008: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0009: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0010: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0011: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0012: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0013: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0014: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0015: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0016: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0017: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0018: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0019: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0020: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0021: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0022: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0023: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0024: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0025: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0026: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0027: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0028: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0029: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0030: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0031: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0032: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0033: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0034: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0035: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0036: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0037: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0038: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0039: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0040: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0041: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0042: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0043: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0044: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0045: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0046: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0047: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0048: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0049: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0050: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0051: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0052: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0053: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0054: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0055: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0056: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0057: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0058: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0059: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0060: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0061: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0062: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0063: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0064: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0065: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0066: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0067: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0068: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0069: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0070: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0071: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0072: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0073: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0074: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0075: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0076: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0077: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0078: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0079: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0080: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0081: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0082: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0083: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0084: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0085: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0086: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0087: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0088: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0089: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0090: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0091: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0092: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0093: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0094: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0095: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0096: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0097: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0098: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0099: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0100: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0101: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0102: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0103: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0104: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0105: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0106: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0107: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0108: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0109: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0110: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0111: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0112: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0113: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0114: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0115: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0116: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0117: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0118: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0119: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0120: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0121: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0122: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0123: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0124: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0125: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0126: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0127: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0128: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0129: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0130: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0131: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0132: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0133: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0134: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0135: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0136: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0137: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0138: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0139: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0140: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0141: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0142: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0143: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0144: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0145: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0146: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0147: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0148: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0149: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0150: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0151: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0152: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0153: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0154: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0155: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0156: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0157: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0158: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0159: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0160: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0161: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0162: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0163: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0164: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0165: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0166: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0167: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0168: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0169: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0170: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0171: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0172: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0173: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0174: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0175: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0176: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0177: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0178: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0179: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0180: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0181: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0182: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0183: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0184: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0185: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0186: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0187: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0188: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0189: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0190: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0191: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0192: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0193: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0194: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0195: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0196: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0197: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0198: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0199: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0200: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0201: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0202: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0203: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0204: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0205: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0206: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0207: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0208: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0209: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0210: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0211: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0212: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0213: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0214: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0215: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0216: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0217: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0218: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0219: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0220: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0221: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0222: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0223: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0224: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0225: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0226: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0227: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0228: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0229: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0230: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0231: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0232: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0233: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0234: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0235: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0236: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0237: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0238: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0239: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0240: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0241: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0242: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0243: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0244: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0245: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0246: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0247: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0248: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0249: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0250: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0251: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0252: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0253: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0254: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0255: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0256: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0257: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0258: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0259: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0260: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0261: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0262: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0263: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0264: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0265: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0266: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0267: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0268: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0269: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0270: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0271: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0272: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0273: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0274: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0275: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0276: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0277: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0278: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0279: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0280: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0281: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0282: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0283: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0284: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0285: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0286: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0287: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0288: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0289: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0290: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0291: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0292: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0293: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0294: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0295: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0296: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0297: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0298: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0299: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0300: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0301: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0302: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0303: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0304: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0305: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0306: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0307: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0308: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0309: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0310: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0311: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0312: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0313: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0314: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0315: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0316: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0317: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0318: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0319: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0320: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0321: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0322: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0323: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0324: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0325: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0326: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0327: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0328: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0329: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0330: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0331: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0332: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0333: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0334: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0335: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0336: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0337: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0338: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0339: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0340: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0341: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0342: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0343: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0344: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0345: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0346: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0347: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0348: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0349: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0350: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0351: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0352: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0353: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0354: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0355: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0356: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0357: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0358: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0359: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0360: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0361: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0362: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0363: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0364: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0365: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0366: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0367: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0368: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0369: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0370: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0371: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0372: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0373: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0374: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0375: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0376: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0377: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0378: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0379: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0380: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0381: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0382: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0383: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0384: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0385: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0386: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0387: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0388: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0389: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0390: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0391: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0392: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0393: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0394: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0395: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0396: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0397: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0398: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0399: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0400: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0401: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0402: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0403: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0404: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0405: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0406: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0407: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0408: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0409: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0410: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0411: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0412: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0413: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0414: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0415: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0416: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0417: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0418: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0419: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0420: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0421: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0422: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0423: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0424: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0425: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0426: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0427: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0428: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0429: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0430: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0431: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0432: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0433: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0434: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0435: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0436: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0437: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0438: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0439: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0440: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0441: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0442: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0443: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0444: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0445: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0446: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0447: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0448: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0449: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0450: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0451: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0452: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0453: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0454: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0455: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0456: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0457: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0458: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0459: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0460: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0461: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0462: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0463: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0464: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0465: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0466: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0467: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0468: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0469: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0470: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0471: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0472: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0473: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0474: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0475: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0476: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0477: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0478: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0479: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0480: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0481: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0482: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0483: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0484: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0485: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0486: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0487: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0488: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0489: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0490: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0491: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0492: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0493: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0494: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0495: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0496: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0497: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0498: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0499: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0500: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0501: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0502: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0503: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0504: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0505: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0506: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0507: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0508: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0509: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0510: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0511: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0512: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0513: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0514: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0515: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0516: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0517: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0518: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0519: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0520: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0521: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0522: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0523: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0524: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0525: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0526: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0527: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0528: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0529: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0530: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0531: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0532: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0533: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0534: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0535: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0536: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0537: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0538: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0539: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0540: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0541: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0542: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0543: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0544: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0545: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0546: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0547: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0548: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0549: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0550: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0551: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0552: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0553: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0554: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0555: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0556: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0557: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0558: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0559: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0560: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0561: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0562: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0563: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0564: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0565: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0566: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0567: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0568: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0569: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0570: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0571: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0572: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0573: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0574: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0575: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0576: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0577: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0578: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0579: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0580: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0581: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0582: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0583: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0584: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0585: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0586: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0587: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0588: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0589: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0590: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0591: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0592: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0593: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0594: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0595: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0596: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0597: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0598: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0599: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0600: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0601: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0602: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0603: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0604: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0605: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0606: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0607: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0608: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0609: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0610: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0611: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0612: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0613: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0614: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0615: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0616: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0617: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0618: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0619: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0620: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0621: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0622: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0623: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0624: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0625: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0626: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0627: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0628: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0629: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0630: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0631: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0632: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0633: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0634: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0635: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0636: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0637: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0638: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0639: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0640: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0641: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0642: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0643: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0644: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0645: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0646: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0647: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0648: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0649: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0650: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0651: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0652: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0653: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0654: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0655: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0656: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0657: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0658: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0659: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0660: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0661: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0662: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0663: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0664: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0665: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0666: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0667: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0668: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0669: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0670: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0671: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0672: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0673: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0674: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0675: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0676: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0677: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0678: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0679: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0680: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0681: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0682: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0683: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0684: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0685: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0686: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0687: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0688: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0689: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0690: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0691: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0692: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0693: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0694: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0695: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0696: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0697: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0698: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0699: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0700: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0701: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0702: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0703: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0704: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0705: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0706: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0707: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0708: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0709: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0710: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0711: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0712: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0713: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0714: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0715: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0716: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0717: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0718: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0719: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0720: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0721: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0722: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0723: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0724: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0725: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0726: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0727: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0728: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0729: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0730: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0731: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0732: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0733: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0734: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0735: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0736: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0737: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0738: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0739: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0740: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0741: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0742: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0743: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0744: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0745: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0746: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0747: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0748: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0749: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0750: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0751: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0752: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0753: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0754: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0755: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0756: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0757: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0758: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0759: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0760: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0761: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0762: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0763: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0764: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0765: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0766: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0767: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0768: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0769: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0770: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0771: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0772: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0773: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0774: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0775: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0776: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0777: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0778: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0779: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0780: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0781: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0782: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0783: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0784: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0785: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0786: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0787: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0788: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0789: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0790: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0791: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0792: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0793: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0794: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0795: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0796: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0797: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0798: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0799: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0800: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0801: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0802: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0803: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0804: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0805: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0806: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0807: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0808: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0809: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0810: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0811: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0812: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0813: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0814: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0815: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0816: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0817: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0818: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0819: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0820: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0821: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0822: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0823: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0824: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0825: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0826: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0827: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0828: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0829: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0830: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0831: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0832: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0833: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0834: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0835: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0836: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0837: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0838: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0839: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0840: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0841: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0842: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0843: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0844: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0845: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0846: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0847: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0848: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0849: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0850: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0851: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0852: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0853: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0854: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0855: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0856: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0857: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0858: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0859: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0860: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0861: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0862: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0863: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0864: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0865: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0866: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0867: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0868: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0869: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0870: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0871: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0872: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0873: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0874: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0875: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0876: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0877: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0878: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0879: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0880: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0881: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0882: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0883: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0884: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0885: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0886: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0887: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0888: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0889: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0890: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0891: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0892: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0893: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0894: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0895: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0896: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0897: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0898: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0899: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0900: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0901: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0902: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0903: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0904: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0905: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0906: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0907: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0908: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0909: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0910: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0911: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0912: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0913: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0914: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0915: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0916: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0917: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0918: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0919: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0920: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0921: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0922: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0923: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0924: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0925: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0926: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0927: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0928: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0929: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0930: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0931: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0932: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0933: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0934: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0935: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0936: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0937: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0938: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0939: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0940: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0941: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0942: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0943: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0944: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0945: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0946: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0947: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0948: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0949: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0950: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0951: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0952: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0953: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0954: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0955: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0956: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0957: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0958: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0959: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0960: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0961: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0962: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0963: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0964: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0965: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0966: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0967: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0968: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0969: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0970: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0971: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0972: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0973: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0974: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0975: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0976: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0977: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0978: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0979: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0980: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0981: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0982: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0983: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0984: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0985: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0986: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0987: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0988: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0989: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0990: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0991: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0992: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0993: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0994: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0995: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0996: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0997: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0998: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 0999: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1000: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1001: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1002: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1003: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1004: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1005: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1006: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1007: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1008: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1009: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1010: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1011: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1012: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1013: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1014: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1015: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1016: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1017: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1018: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1019: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1020: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1021: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1022: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1023: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1024: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1025: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1026: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1027: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1028: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1029: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1030: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1031: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1032: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1033: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1034: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1035: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1036: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1037: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1038: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1039: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1040: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1041: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1042: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1043: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1044: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1045: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1046: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1047: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1048: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1049: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1050: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1051: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1052: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1053: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1054: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1055: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1056: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1057: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1058: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1059: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1060: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1061: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1062: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1063: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1064: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1065: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1066: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1067: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1068: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1069: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1070: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1071: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1072: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1073: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1074: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1075: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1076: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1077: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1078: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1079: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1080: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1081: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1082: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1083: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1084: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1085: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1086: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1087: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1088: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1089: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1090: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1091: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1092: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1093: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1094: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1095: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1096: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1097: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1098: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1099: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1100: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1101: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1102: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1103: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1104: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1105: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1106: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1107: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1108: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1109: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1110: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1111: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1112: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1113: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1114: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1115: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1116: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1117: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1118: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1119: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1120: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1121: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1122: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1123: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1124: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1125: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1126: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1127: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1128: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1129: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1130: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1131: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1132: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1133: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1134: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1135: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1136: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1137: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1138: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1139: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1140: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1141: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1142: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1143: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1144: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1145: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1146: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1147: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1148: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1149: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1150: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1151: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1152: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1153: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1154: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1155: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1156: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1157: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1158: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1159: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1160: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1161: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1162: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1163: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1164: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1165: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1166: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1167: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1168: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1169: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1170: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1171: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1172: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1173: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1174: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1175: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1176: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1177: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1178: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1179: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1180: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1181: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1182: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1183: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1184: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1185: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1186: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1187: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1188: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1189: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1190: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1191: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1192: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1193: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1194: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1195: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1196: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1197: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1198: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1199: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1200: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1201: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1202: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1203: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1204: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1205: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1206: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1207: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1208: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1209: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1210: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1211: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1212: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1213: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1214: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1215: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1216: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1217: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1218: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1219: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1220: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1221: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1222: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1223: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1224: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1225: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1226: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1227: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1228: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1229: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1230: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1231: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1232: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1233: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1234: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1235: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1236: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1237: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1238: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1239: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1240: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1241: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1242: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1243: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1244: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1245: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1246: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1247: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1248: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1249: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1250: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1251: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1252: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1253: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1254: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1255: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1256: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1257: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1258: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1259: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1260: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1261: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1262: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1263: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1264: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1265: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1266: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1267: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1268: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1269: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1270: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1271: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1272: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1273: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1274: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1275: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1276: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1277: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1278: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1279: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1280: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1281: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1282: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1283: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1284: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1285: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1286: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1287: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1288: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1289: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1290: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1291: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1292: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1293: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1294: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1295: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1296: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1297: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1298: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1299: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1300: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1301: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1302: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1303: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1304: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1305: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1306: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1307: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1308: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1309: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1310: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1311: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1312: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1313: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1314: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1315: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1316: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1317: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1318: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1319: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1320: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1321: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1322: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1323: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1324: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1325: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1326: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1327: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1328: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1329: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1330: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1331: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1332: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1333: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1334: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1335: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1336: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1337: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1338: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1339: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1340: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1341: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1342: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1343: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1344: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1345: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1346: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1347: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1348: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1349: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1350: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1351: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1352: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1353: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1354: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1355: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1356: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1357: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1358: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1359: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1360: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1361: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1362: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1363: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1364: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1365: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1366: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1367: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1368: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1369: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1370: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1371: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1372: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1373: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1374: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1375: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1376: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1377: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1378: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1379: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1380: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1381: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1382: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1383: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1384: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1385: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1386: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1387: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1388: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1389: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1390: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1391: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1392: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1393: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1394: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1395: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1396: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1397: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1398: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1399: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1400: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1401: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1402: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1403: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1404: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1405: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1406: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1407: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1408: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1409: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1410: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1411: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1412: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1413: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1414: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1415: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1416: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1417: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1418: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1419: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1420: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1421: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1422: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1423: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1424: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1425: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1426: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1427: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1428: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1429: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1430: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1431: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1432: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1433: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1434: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1435: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1436: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1437: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1438: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1439: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1440: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1441: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1442: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1443: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1444: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1445: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1446: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1447: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1448: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1449: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1450: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1451: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1452: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1453: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1454: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1455: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1456: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1457: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1458: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1459: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1460: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1461: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1462: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1463: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1464: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1465: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1466: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1467: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1468: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1469: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1470: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1471: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1472: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1473: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1474: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1475: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1476: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1477: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1478: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1479: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1480: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1481: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1482: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1483: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1484: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1485: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1486: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1487: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1488: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1489: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1490: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1491: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1492: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1493: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1494: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1495: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1496: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1497: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1498: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1499: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1500: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1501: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1502: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1503: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1504: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1505: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1506: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1507: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1508: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1509: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1510: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1511: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1512: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1513: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1514: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1515: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1516: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1517: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1518: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1519: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1520: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1521: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1522: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1523: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1524: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1525: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1526: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1527: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1528: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1529: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1530: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1531: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1532: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1533: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1534: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1535: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1536: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1537: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1538: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1539: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1540: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1541: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1542: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1543: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1544: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1545: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1546: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1547: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1548: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1549: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1550: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1551: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1552: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1553: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1554: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1555: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1556: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1557: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1558: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1559: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1560: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1561: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1562: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1563: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1564: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1565: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1566: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1567: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1568: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1569: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1570: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1571: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1572: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1573: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1574: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1575: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1576: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1577: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1578: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1579: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1580: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1581: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1582: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1583: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1584: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1585: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1586: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1587: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1588: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1589: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1590: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1591: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1592: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1593: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1594: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1595: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1596: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1597: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1598: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1599: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1600: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1601: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1602: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1603: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1604: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1605: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1606: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1607: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1608: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1609: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1610: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1611: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1612: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1613: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1614: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1615: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1616: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1617: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1618: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1619: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1620: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1621: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1622: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1623: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1624: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1625: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1626: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1627: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1628: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1629: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1630: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1631: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1632: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1633: Packet counter // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1634: Alert-mode visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1635: Core health indicators // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1636: Network node visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1637: Command history // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1638: Local-only safety boundary // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1639: No external network access // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1640: No destructive operations // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1641: Orbital telemetry visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1642: Local terminal simulation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1643: Passive radar visualization // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1644: Synthetic telemetry generation // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1645: Local security status display // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1646: Mission event stream // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1647: Responsive interface behavior // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1648: Canvas star field // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1649: Canvas radar renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1650: Telemetry graph renderer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1651: Mission timer // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1652: Signal monitor // VK SATELLITE LOCAL UI MODULE
+REFERENCE 1653: Packet counter // VK SATELLITE LOCAL UI MODULE
+-->
