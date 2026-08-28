@@ -960,6 +960,33 @@ body.emergency-active .emergency-command-box {
 }
 </style>
 
+
+<style id="vk-mobile-command-fix">
+@media (max-width: 650px){
+  .sa-command-grid button{
+    min-height:42px;
+    padding:10px 6px;
+    font-size:9px;
+    touch-action:manipulation;
+  }
+  .sa-cinematic-layer{
+    pointer-events:none;
+  }
+  .sa-cinematic-window{
+    width:calc(100vw - 24px) !important;
+    max-width:none;
+    left:12px !important;
+    top:10vh !important;
+    max-height:78vh;
+    overflow:auto;
+  }
+  .sa-cw-content{padding:15px 14px 18px}
+  .sa-cw-title{font-size:24px}
+  .sa-cw-sub{font-size:12px}
+  .sa-cw-screen{font-size:10px;max-height:220px;overflow:auto}
+}
+</style>
+
 </head>
 <body>
 
@@ -2178,6 +2205,16 @@ console.log(
           <button onclick="saCommand('logs')">LOGS</button>
           <button onclick="saCommand('ping')">PING</button>
           <button onclick="saCommand('clear')">CLEAR</button>
+          <button onclick="vkMobileNumberCommand('1')">01 ENCRYPT</button>
+          <button onclick="vkMobileNumberCommand('2')">02 HAWK</button>
+          <button onclick="vkMobileNumberCommand('3')">03 DECRYPT</button>
+          <button onclick="vkMobileNumberCommand('4')">04 NODES</button>
+          <button onclick="vkMobileNumberCommand('5')">05 BREACH</button>
+          <button onclick="vkMobileNumberCommand('6')">06 UPLINK</button>
+          <button onclick="vkMobileNumberCommand('7')">07 ORBIT</button>
+          <button onclick="vkMobileNumberCommand('8')">08 DATA</button>
+          <button onclick="vkMobileNumberCommand('9')">09 AI CORE</button>
+          <button onclick="vkMobileNumberCommand('0')">10 LOCKDOWN</button>
         </div>
       </aside>
 
@@ -2362,6 +2399,16 @@ console.log(
     let command = String(raw || "").trim().toLowerCase();
     if (!command) return;
     saPrint("cmd", "vk@orbital:~# " + command);
+
+    // Numeric cinematic commands also work from the mobile/onscreen terminal.
+    if (/^(?:[1-9]|10|0)$/.test(command)) {
+      const cinematicKey = command === "10" ? "0" : command;
+      if (typeof window.vkCinematicCommand === "function") {
+        window.vkCinematicCommand(cinematicKey);
+        saPrint("ok", "CINEMATIC COMMAND " + (command === "0" ? "10" : command) + " EXECUTED");
+      }
+      return;
+    }
     if (command === "clear") { sa("saOutput").innerHTML = ""; return; }
     if (command === "whoami") {
       SA_COMMANDS.status.forEach(([t,x]) => saPrint(t,x));
