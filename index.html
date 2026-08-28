@@ -859,6 +859,107 @@ body.emergency-active .emergency-command-box {
 }
 </style>
 
+
+<style id="vk-satellite-access-css">
+/* ===== VK SATELLITE ACCESS // ADDITIVE FEATURE ===== */
+.sat-access-btn{
+  margin-left:10px;padding:9px 12px;border:1px solid rgba(0,234,255,.45);
+  background:rgba(0,234,255,.06);color:#00eaff;font:10px "Courier New",monospace;
+  letter-spacing:1px;cursor:pointer;box-shadow:0 0 16px rgba(0,234,255,.08)
+}
+.sat-access-btn:hover{background:rgba(0,234,255,.16);box-shadow:0 0 28px rgba(0,234,255,.2)}
+.satellite-access-modal{position:fixed;inset:0;z-index:1100;display:none;place-items:center;
+  background:rgba(0,0,0,.86);backdrop-filter:blur(12px);padding:20px}
+.satellite-access-modal.open{display:grid}
+.sa-shell{width:min(1120px,96vw);max-height:92vh;overflow:auto;border:1px solid #00eaff;
+  background:#02070c;box-shadow:0 0 100px rgba(0,234,255,.2)}
+.sa-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;
+  border-bottom:1px solid rgba(0,234,255,.18)}
+.sa-head b{color:#fff;letter-spacing:2px}.sa-head small{display:block;color:#6c8d99;margin-top:4px}
+.sa-close{font-size:20px;padding:4px 10px}
+.sa-body{display:grid;grid-template-columns:330px 1fr;min-height:620px}
+.sa-auth{padding:22px;border-right:1px solid rgba(0,234,255,.12)}
+.sa-terminal{display:flex;flex-direction:column;min-width:0;background:
+ linear-gradient(rgba(0,255,157,.025) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(0,255,157,.025) 1px,transparent 1px),#010407;background-size:22px 22px}
+.sa-label{color:#00ff9d;font-size:10px;letter-spacing:3px;margin-bottom:10px}
+.sa-copy{color:#6c8d99;font-size:10px;line-height:1.8;margin-bottom:16px}
+.sa-code{width:100%;padding:13px;background:#02080d;color:#fff;border:1px solid rgba(0,234,255,.25);outline:none}
+.sa-code:focus{border-color:#00eaff;box-shadow:0 0 18px rgba(0,234,255,.12)}
+.sa-verify{width:100%;margin-top:9px;background:#00eaff;color:#001013;border-color:#00eaff;font-weight:bold}
+.sa-status{min-height:18px;margin-top:10px;font-size:10px}
+.sa-status.ok{color:#00ff9d}.sa-status.err{color:#ff3158}.sa-status.warn{color:#ffc857}
+.sa-fingerprint{margin:22px auto;width:205px;height:205px;border-radius:50%;display:grid;place-items:center;
+ position:relative;border:1px solid rgba(0,234,255,.35);background:radial-gradient(circle,rgba(0,234,255,.12),transparent 58%);
+ box-shadow:inset 0 0 40px rgba(0,234,255,.1),0 0 35px rgba(0,234,255,.1);cursor:pointer;overflow:hidden}
+.sa-fingerprint.locked{opacity:.38;filter:grayscale(1);cursor:not-allowed}
+.sa-fingerprint.scanning{animation:saPulse .55s infinite alternate;border-color:#00eaff}
+.sa-fingerprint.granted{border-color:#00ff9d;box-shadow:0 0 60px rgba(0,255,157,.3),inset 0 0 45px rgba(0,255,157,.12)}
+@keyframes saPulse{to{transform:scale(1.025)}}
+.sa-fp-glyph{width:88px;height:115px;border:3px solid #00eaff;border-radius:50% 50% 45% 45%;
+ position:relative;box-shadow:0 0 20px rgba(0,234,255,.25)}
+.sa-fp-glyph:before,.sa-fp-glyph:after{content:"";position:absolute;border:3px solid #00eaff;border-radius:50%}
+.sa-fp-glyph:before{inset:15px 17px 22px}.sa-fp-glyph:after{inset:30px 28px 15px}
+.sa-fp-line{position:absolute;left:18px;right:18px;top:45px;height:2px;background:#00eaff;box-shadow:0 0 16px #00eaff;animation:saSweep 1.5s ease-in-out infinite}
+@keyframes saSweep{0%,100%{top:42px;opacity:.3}50%{top:160px;opacity:1}}
+.sa-fp-hint{position:absolute;bottom:20px;color:#6c8d99;font-size:8px;letter-spacing:2px}
+.sa-auth-note{padding:10px;border-left:2px solid #00eaff;background:rgba(0,234,255,.04);color:#9ab2bb;font-size:9px;line-height:1.7}
+.sa-auth-note.ok{border-color:#00ff9d;color:#00ff9d}.sa-auth-note.err{border-color:#ff3158;color:#ff3158}
+.sa-window{height:100%;display:flex;flex-direction:column}.sa-window-head{height:44px;display:flex;align-items:center;
+ justify-content:space-between;padding:0 14px;border-bottom:1px solid rgba(0,234,255,.12);color:#6c8d99;font-size:9px}
+.sa-window-head b{color:#c9f7ff;letter-spacing:2px}
+.sa-output{flex:1;min-height:470px;overflow:auto;padding:18px;font-size:11px;line-height:1.7}
+.sa-line{white-space:pre-wrap;margin-bottom:4px}.sa-line.info{color:#00eaff}.sa-line.ok{color:#00ff9d}
+.sa-line.warn{color:#ffc857}.sa-line.err{color:#ff3158}.sa-line.cmd{color:#fff}.sa-line.dim{color:#48646d}
+.sa-input-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
+ padding:10px 12px;border-top:1px solid rgba(0,234,255,.12)}
+.sa-input-row span{color:#00ff9d;font-size:10px}.sa-input{border:0;outline:0;background:transparent;color:#fff;padding:8px}
+.sa-input-row button{color:#00ff9d;border-color:rgba(0,255,157,.3);font-size:9px}
+.sa-command-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:18px}
+.sa-command-grid button{text-align:left;font-size:9px;padding:8px}
+@media(max-width:800px){.sa-body{grid-template-columns:1fr}.sa-auth{border-right:0;border-bottom:1px solid rgba(0,234,255,.12)}.sat-access-btn{margin-left:0}}
+@media(max-width:520px){.sa-input-row{grid-template-columns:1fr auto}.sa-input-row span{display:none}.sa-command-grid{grid-template-columns:1fr}}
+</style>
+
+
+<style id="vk-hotkey-cinematic-css">
+/* ===== VK SATELLITE // 1-10 CINEMATIC COMMAND WINDOWS ===== */
+.sa-cinematic-layer{position:fixed;inset:0;z-index:1200;pointer-events:none;overflow:hidden}
+.sa-cinematic-window{
+  position:absolute;width:min(560px,78vw);min-height:220px;background:#000;
+  border:2px solid #e8faff;box-shadow:0 0 35px rgba(0,234,255,.16),0 0 100px rgba(0,0,0,.8);
+  color:#fff;pointer-events:auto;animation:saWinIn .24s ease-out;overflow:hidden
+}
+@keyframes saWinIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:none}}
+.sa-cinematic-window.alert{border-color:#ff3158;box-shadow:0 0 38px rgba(255,49,88,.22),0 0 100px #000}
+.sa-cinematic-window.success{border-color:#00ff9d}
+.sa-cw-top{height:38px;border-bottom:2px solid #e8faff;display:flex;align-items:center;
+  justify-content:space-between;padding:0 12px;font:12px "Courier New",monospace;font-weight:bold}
+.sa-cw-top span:first-child{letter-spacing:1px}.sa-cw-close{padding:2px 8px;border:0;background:none;color:#fff;font-size:18px;cursor:pointer}
+.sa-cw-content{padding:22px 26px 25px;text-align:center}
+.sa-cw-title{font:700 30px Arial,sans-serif;margin:4px 0 10px;text-transform:capitalize}
+.sa-cw-sub{font:16px Arial,sans-serif;margin-bottom:20px}
+.sa-cw-screen{margin:0 auto;padding:13px;text-align:left;background:#080808;border:1px solid #27343a;
+  color:#cfd9dd;font:11px/1.65 "Courier New",monospace;min-height:90px;white-space:pre-wrap}
+.sa-cw-progress{height:8px;background:#111;margin:18px 0 8px;overflow:hidden}
+.sa-cw-progress i{display:block;height:100%;width:0;background:#00eaff;box-shadow:0 0 14px #00eaff;
+  animation:saProgress 3.2s linear forwards}
+.sa-cinematic-window.alert .sa-cw-progress i{background:#ff3158;box-shadow:0 0 14px #ff3158}
+.sa-cinematic-window.success .sa-cw-progress i{background:#00ff9d;box-shadow:0 0 14px #00ff9d}
+@keyframes saProgress{to{width:100%}}
+.sa-cw-foot{font:9px "Courier New",monospace;color:#70838a;letter-spacing:1px}
+.sa-cw-badge{display:inline-block;padding:5px 9px;margin-bottom:12px;border:1px solid currentColor;font:10px "Courier New",monospace}
+.sa-cw-big{font:700 42px "Courier New",monospace;letter-spacing:5px;margin:8px 0 15px}
+.sa-cw-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;text-align:left}
+.sa-cw-grid div{padding:8px;background:#080b0d;border-left:2px solid #00eaff;font:10px "Courier New",monospace}
+.sa-cinematic-window.alert .sa-cw-grid div{border-left-color:#ff3158}
+.sa-hotkey-help{margin-top:14px;color:#55717a;font:9px "Courier New",monospace;text-align:center}
+@media(max-width:650px){
+  .sa-cinematic-window{width:90vw}.sa-cw-title{font-size:23px}.sa-cw-sub{font-size:13px}
+  .sa-cw-content{padding:17px}
+}
+</style>
+
 </head>
 <body>
 
@@ -1081,7 +1182,7 @@ body.emergency-active .emergency-command-box {
 </div> <header> <a class="brand" href="#top"> <div class="brand-mark"></div> <div> <strong>VK SATELLITE</strong> <small>ORBITAL INTELLIGENCE // SIMULATION</small> </div> </a> <nav class="nav"> <a href="#overview">OVERVIEW</a> <a href="#orbit">ORBIT</a> <a href="#radar">RADAR</a> <a href="#terminal">TERMINAL</a> <a href="#telemetry">TELEMETRY</a>
 <a href="#advanced">CONTROL</a>
 <a href="#security">SECURITY</a>
-<a href="#analytics">ANALYTICS</a> </nav> <div class="status"><i class="dot"></i>LINK ONLINE</div>
+<a href="#analytics">ANALYTICS</a> </nav> <button class="sat-access-btn" type="button" onclick="openSatelliteAccess()">SATELLITE ACCESS</button><div class="status"><i class="dot"></i>LINK ONLINE</div>
 </header> <main id="top"> <section class="hero"> <div> <div class="eyebrow">CLASSIFIED // VK-ORBITAL-01</div> <h1>VK<br><span>SATELLITE</span></h1> <p>  </p> <div class="hero-actions"> <button class="primary" onclick="startSimulation()">INITIALIZE SIMULATION</button> <button onclick="scrollToTerminal()">OPEN TERMINAL</button> <button onclick="openModal()">MISSION DATA</button> </div> </div> <div class="satellite"> <div class="orbit"></div> <div class="orbit two"></div> <div class="orbit three"></div> <div class="sat-body"> <div class="antenna"></div> <div class="signal"></div> </div> </div>
 </section> <section id="overview"> <div class="section-head"> <div> <div class="eyebrow">01 // SYSTEM OVERVIEW</div> <h2>ORBITAL COMMAND DECK</h2> </div> <p id="clock">00:00:00 UTC</p> </div> <div class="grid"> <div class="panel card metric span-3"> <label>ALTITUDE</label> <strong id="altitude">408.21</strong> <em>KM // STABLE</em> </div> <div class="panel card metric span-3"> <label>VELOCITY</label> <strong id="velocity">7.66</strong> <em>KM/S // NOMINAL</em> </div> <div class="panel card metric span-3"> <label>SIGNAL</label> <strong id="signalMetric">98.4</strong> <em>% // ENCRYPTED</em> </div> <div class="panel card metric span-3"> <label>POWER</label> <strong id="power">87</strong> <em>% // OPTIMAL</em> </div> </div>
 </section> <section id="orbit"> <div class="section-head"> <div> <div class="eyebrow">02 // ORBITAL TRACKING</div> <h2>GLOBAL TRACK</h2> </div> <p>SIMULATION DATA // REFRESH 1S</p> </div> <div class="grid"> <div class="panel map span-8"> <div class="blip b1"></div> <div class="blip b2"></div> <div class="blip b3"></div> <div class="blip b4"></div> <div class="map-label" style="left:24%;top:36%">NODE A-17</div> <div class="map-label" style="left:60%;top:20%">RELAY B-09</div> <div class="map-label" style="left:70%;top:72%">GROUND C-04</div> <div class="map-label" style="left:36%;top:76%">BEACON D-21</div> </div> <div class="panel card span-4"> <div class="eyebrow">ORBIT PARAMETERS</div> <table class="table"> <tr><td>PERIGEE</td><td>401.8 KM</td></tr> <tr><td>APOGEE</td><td>416.2 KM</td></tr> <tr><td>INCLINATION</td><td>51.64°</td></tr> <tr><td>PERIOD</td><td>92.7 MIN</td></tr> <tr><td>ORBIT</td><td>LEO</td></tr> <tr><td>MODE</td><td class="ok">NOMINAL</td></tr> </table> <div class="scan" style="margin-top:18px"> <div class="scan-grid"></div> </div> </div> </div>
@@ -2033,5 +2134,524 @@ console.log(
   "color:#00ff9d"
 );
 </script>
+
+<!-- ===== VK SATELLITE ACCESS // ADDITIVE CONTROL LAYER ===== -->
+<div id="satelliteAccessModal" class="satellite-access-modal" aria-modal="true" role="dialog">
+  <div class="sa-shell">
+    <div class="sa-head">
+      <div>
+        <b>VK SATELLITE // ACCESS CONTROL</b>
+        <small>LOCAL CINEMATIC AUTHENTICATION // NO EXTERNAL ACTIONS</small>
+      </div>
+      <button class="sa-close" type="button" onclick="closeSatelliteAccess()">×</button>
+    </div>
+    <div class="sa-body">
+      <aside class="sa-auth">
+        <div class="sa-label">01 // SATELLITE ACCESS</div>
+        <div class="sa-copy">Enter the four-digit mission access code to activate the biometric stage.</div>
+        <input id="saCode" class="sa-code" inputmode="numeric" maxlength="4" placeholder="ENTER ACCESS CODE">
+        <button class="sa-verify" type="button" onclick="verifySatelliteCode()">VERIFY SATELLITE ACCESS</button>
+        <div id="saCodeStatus" class="sa-status"></div>
+
+        <div class="sa-label" style="margin-top:24px">02 // FINGERPRINT ACCESS</div>
+        <div id="saFingerprint" class="sa-fingerprint locked" tabindex="0" role="button" aria-label="Hold to scan fingerprint">
+          <div class="sa-fp-glyph"></div>
+          <div class="sa-fp-line"></div>
+          <div class="sa-fp-hint">HOLD TO SCAN</div>
+        </div>
+        <div id="saBioNote" class="sa-auth-note">LOCKED // VERIFY SATELLITE ACCESS FIRST.</div>
+
+        <div class="sa-command-grid">
+          <button onclick="saCommand('status')">STATUS</button>
+          <button onclick="saCommand('help')">COMMANDS</button>
+          <button onclick="saCommand('orbit')">ORBIT</button>
+          <button onclick="saCommand('telemetry')">TELEMETRY</button>
+          <button onclick="saCommand('radar')">RADAR</button>
+          <button onclick="saCommand('scan')">SCAN</button>
+          <button onclick="saCommand('network')">NETWORK</button>
+          <button onclick="saCommand('diagnostics')">DIAGNOSTICS</button>
+          <button onclick="saCommand('power')">POWER</button>
+          <button onclick="saCommand('thermal')">THERMAL</button>
+          <button onclick="saCommand('tracking')">TRACKING</button>
+          <button onclick="saCommand('comms')">COMMS</button>
+          <button onclick="saCommand('matrix')">MATRIX</button>
+          <button onclick="saCommand('logs')">LOGS</button>
+          <button onclick="saCommand('ping')">PING</button>
+          <button onclick="saCommand('clear')">CLEAR</button>
+        </div>
+      </aside>
+
+      <section class="sa-terminal">
+        <div class="sa-window">
+          <div class="sa-window-head">
+            <span>● ● ●</span><b>VK-TERM // SATELLITE ACCESS</b><span id="saClock">00:00:00</span>
+          </div>
+          <div id="saOutput" class="sa-output" aria-live="polite"></div>
+          <div class="sa-input-row">
+            <span>vk@orbital:~#</span>
+            <input id="saInput" class="sa-input" autocomplete="off" spellcheck="false"
+                   placeholder="type help, status, orbit, scan...">
+            <button type="button" onclick="submitSaCommand()">EXEC</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+
+<script id="vk-satellite-access-js">
+/* ===== VK SATELLITE ACCESS ENGINE // LOCAL UI SIMULATION ===== */
+(() => {
+  "use strict";
+
+  const SA_CODE = "2727";
+  let saAuthorized = false;
+  let saBiometric = false;
+  let saTimer = null;
+  let saAttempts = 0;
+
+  const sa = id => document.getElementById(id);
+  const saPrint = (type, text) => {
+    const out = sa("saOutput");
+    if (!out) return;
+    const line = document.createElement("div");
+    line.className = "sa-line " + type;
+    line.textContent = text;
+    out.appendChild(line);
+    out.scrollTop = out.scrollHeight;
+  };
+
+  const SA_COMMANDS = {
+    help: [
+      ["info","VK SATELLITE ACCESS // COMMAND INDEX"],
+      ["cmd","help          show command index"],
+      ["cmd","status        system status"],
+      ["cmd","orbit         orbital parameters"],
+      ["cmd","telemetry     live telemetry"],
+      ["cmd","radar         radar/object field"],
+      ["cmd","scan          passive sensor scan"],
+      ["cmd","network       local topology"],
+      ["cmd","diagnostics  subsystem diagnostics"],
+      ["cmd","power         power subsystem"],
+      ["cmd","thermal       thermal subsystem"],
+      ["cmd","tracking      object tracking"],
+      ["cmd","comms         communications status"],
+      ["cmd","matrix        synthetic matrix stream"],
+      ["cmd","logs          recent local events"],
+      ["cmd","ping          local link test"],
+      ["cmd","clear         clear console"],
+      ["warn","All commands are visual simulations. No external systems are contacted."]
+    ],
+    status: [
+      ["info","VK-01 // SYSTEM STATUS"],
+      ["ok","CORE.............. ONLINE"],
+      ["ok","POWER............. 87%"],
+      ["ok","SIGNAL............ 98.4%"],
+      ["ok","ATTITUDE.......... LOCKED"],
+      ["ok","THERMAL........... NOMINAL"],
+      ["ok","UPLINK............ SECURE"],
+      ["ok","EXTERNAL LINK..... NONE"]
+    ],
+    orbit: [
+      ["info","ORBITAL PARAMETERS"],
+      ["cmd","ALTITUDE......... 408.21 KM"],
+      ["cmd","VELOCITY......... 7.66 KM/S"],
+      ["cmd","INCLINATION...... 51.64°"],
+      ["cmd","PERIOD........... 92.7 MIN"],
+      ["cmd","CLASS............ LEO"],
+      ["ok","ORBIT STATE....... NOMINAL"]
+    ],
+    telemetry: [
+      ["info","LIVE TELEMETRY FEED"],
+      ["cmd","THERMAL.......... 21.8°C"],
+      ["cmd","DATA BUS......... 842 MB/S"],
+      ["cmd","ATTITUDE......... 0.004°"],
+      ["cmd","SIGNAL........... 98.4%"],
+      ["cmd","POWER............ 87%"]
+    ],
+    radar: [
+      ["info","RADAR MODULE"],
+      ["cmd","MODE............. PASSIVE"],
+      ["cmd","RANGE............ 12,000 KM"],
+      ["cmd","OBJECTS.......... 14"],
+      ["ok","SWEEP............ ACTIVE"]
+    ],
+    scan: [
+      ["info","STARTING FICTIONAL PASSIVE SCAN..."],
+      ["cmd","SECTOR 01........ CLEAR"],
+      ["cmd","SECTOR 02........ CLEAR"],
+      ["cmd","SECTOR 03........ 02 OBJECTS"],
+      ["cmd","SECTOR 04........ CLEAR"],
+      ["cmd","SENSOR MATRIX.... NOMINAL"],
+      ["ok","SCAN COMPLETE // NO ACTION TAKEN"]
+    ],
+    network: [
+      ["info","LOCAL VISUAL TOPOLOGY"],
+      ["cmd","             [VK-CORE]"],
+      ["cmd","            /    |    \\"],
+      ["cmd","       [RADAR] [DATA] [AUTH]"],
+      ["cmd","          |       |      |"],
+      ["cmd","      [SENSOR] [CACHE] [ADMIN]"],
+      ["ok","0 EXTERNAL CONNECTIONS"]
+    ],
+    diagnostics: [
+      ["info","FULL SUBSYSTEM DIAGNOSTICS"],
+      ["ok","PROCESSOR........ PASS"],
+      ["ok","MEMORY........... PASS"],
+      ["ok","STORAGE.......... PASS"],
+      ["ok","SENSOR BUS....... PASS"],
+      ["ok","COMMAND QUEUE.... CLEAR"],
+      ["ok","INTEGRITY........ 100%"]
+    ],
+    power: [
+      ["info","POWER MANAGEMENT"],
+      ["cmd","SOLAR ARRAY...... 91%"],
+      ["cmd","BATTERY.......... 87%"],
+      ["cmd","BUS LOAD......... 62%"],
+      ["ok","POWER RESERVE..... OPTIMAL"]
+    ],
+    thermal: [
+      ["info","THERMAL CONTROL"],
+      ["cmd","CORE............. 21.8°C"],
+      ["cmd","CABIN............ 19.4°C"],
+      ["cmd","RADIATOR......... ACTIVE"],
+      ["ok","THERMAL ENVELOPE.. NOMINAL"]
+    ],
+    tracking: [
+      ["info","OBJECT TRACKING"],
+      ["cmd","VX-014........... 2,412 KM / TRACKED"],
+      ["cmd","OR-221........... 4,810 KM / NOMINAL"],
+      ["cmd","AX-902........... 7,104 KM / WATCH"],
+      ["cmd","DS-087........... 1,920 KM / TRACKED"],
+      ["ok","TRACK TABLE....... UPDATED"]
+    ],
+    comms: [
+      ["info","COMMUNICATIONS"],
+      ["cmd","UPLINK........... 98.4%"],
+      ["cmd","DOWNLINK......... 97.8%"],
+      ["cmd","LATENCY.......... 42ms"],
+      ["cmd","CHANNEL.......... SECURE"],
+      ["ok","GROUND LINK....... NOMINAL"]
+    ],
+    matrix: [
+      ["info","MATRIX STREAM // SYNTHETIC"],
+      ["cmd","01 10 11 00 01 01 10 00 11 10"],
+      ["cmd","10 01 00 11 10 10 01 01 00 11"],
+      ["cmd","11 11 00 01 10 00 10 11 01 00"],
+      ["cmd","00 10 01 10 11 01 00 01 10 10"],
+      ["ok","STREAM COMPLETE // LOCAL ONLY"]
+    ],
+    logs: [
+      ["info","RECENT LOCAL EVENT LOG"],
+      ["cmd","16:14:01 AUTH // ACCESS MODULE READY"],
+      ["cmd","16:14:08 LINK // HEARTBEAT RECEIVED"],
+      ["cmd","16:14:13 RADAR // PASSIVE SWEEP COMPLETE"],
+      ["cmd","16:14:18 DATA // TELEMETRY BATCH SEALED"],
+      ["ok","LOG QUERY COMPLETE"]
+    ],
+    ping: [
+      ["info","PING VK-CORE"],
+      ["cmd","LOCAL RESPONSE...... 42ms"],
+      ["cmd","PACKET LOSS......... 0%"],
+      ["ok","LINK TEST COMPLETE"]
+    ]
+  };
+
+  function saRun(raw) {
+    let command = String(raw || "").trim().toLowerCase();
+    if (!command) return;
+    saPrint("cmd", "vk@orbital:~# " + command);
+    if (command === "clear") { sa("saOutput").innerHTML = ""; return; }
+    if (command === "whoami") {
+      SA_COMMANDS.status.forEach(([t,x]) => saPrint(t,x));
+      saPrint("info","IDENTITY........ VK SATELLITE ADMIN");
+      return;
+    }
+    if (SA_COMMANDS[command]) {
+      SA_COMMANDS[command].forEach(([t,x], i) => setTimeout(() => saPrint(t,x), i * 38));
+    } else {
+      saPrint("err","command not found: " + command);
+      saPrint("info",'Type "help" to list simulation commands.');
+    }
+  }
+
+  window.openSatelliteAccess = () => {
+    sa("satelliteAccessModal")?.classList.add("open");
+    sa("saCode")?.focus();
+    if (!sa("saOutput")?.children.length) {
+      saPrint("info","VK SATELLITE ACCESS CONTROL INITIALIZED");
+      saPrint("dim","ENTER CODE 2727 TO ENABLE FINGERPRINT ACCESS.");
+    }
+  };
+
+  window.closeSatelliteAccess = () => {
+    sa("satelliteAccessModal")?.classList.remove("open");
+    if (saTimer) { clearTimeout(saTimer); saTimer = null; }
+  };
+
+  window.verifySatelliteCode = () => {
+    const value = String(sa("saCode")?.value || "").trim();
+    const status = sa("saCodeStatus");
+    const fp = sa("saFingerprint");
+    if (value !== SA_CODE) {
+      if (status) { status.textContent = "ACCESS DENIED // INVALID SATELLITE CODE"; status.className = "sa-status err"; }
+      saPrint("err","SATELLITE ACCESS DENIED // INVALID CODE");
+      return;
+    }
+    saAuthorized = true;
+    if (status) { status.textContent = "CODE 2727 VERIFIED // FINGERPRINT ENABLED"; status.className = "sa-status ok"; }
+    fp?.classList.remove("locked");
+    sa("saBioNote").textContent = "READY // HOLD THE FINGERPRINT SCANNER FOR 1.5 SECONDS.";
+    sa("saBioNote").className = "sa-auth-note";
+    saPrint("ok","SATELLITE ACCESS CODE 2727 ACCEPTED");
+    saPrint("info","BIOMETRIC MODULE ENABLED // HOLD TO SCAN");
+    if (typeof window.vkPlayGrantedSound === "function") window.vkPlayGrantedSound();
+  };
+
+  function startSaBio(event) {
+    event?.preventDefault();
+    if (!saAuthorized || saBiometric || saTimer) return;
+    const fp = sa("saFingerprint");
+    fp?.classList.add("scanning");
+    sa("saBioNote").textContent = "SCANNING // MAINTAIN CONTACT...";
+    saTimer = setTimeout(() => {
+      saTimer = null;
+      saBiometric = true;
+      fp?.classList.remove("scanning","locked");
+      fp?.classList.add("granted");
+      sa("saBioNote").textContent = "BIOMETRIC VERIFIED // COMMAND TERMINAL UNLOCKED.";
+      sa("saBioNote").className = "sa-auth-note ok";
+      if (typeof window.vkEnableCinematicHotkeys === "function") window.vkEnableCinematicHotkeys();
+      saPrint("ok","FINGERPRINT MATCH CONFIRMED");
+      saPrint("ok","SATELLITE COMMAND AUTHORITY GRANTED");
+      saPrint("info",'TYPE "help" FOR THE FULL COMMAND INDEX');
+      if (typeof window.vkPlayGrantedSound === "function") window.vkPlayGrantedSound();
+    },1500);
+  }
+
+  function cancelSaBio() {
+    if (!saTimer) return;
+    clearTimeout(saTimer); saTimer = null;
+    sa("saFingerprint")?.classList.remove("scanning");
+    sa("saBioNote").textContent = "SCAN INTERRUPTED // HOLD CONTINUOUSLY FOR 1.5 SECONDS.";
+  }
+
+  window.submitSaCommand = () => {
+    const input = sa("saInput");
+    if (!input || !input.value.trim()) return;
+    const value = input.value;
+    input.value = "";
+    if (!saBiometric) {
+      saPrint("err","COMMAND LOCKED // COMPLETE FINGERPRINT ACCESS FIRST");
+      return;
+    }
+    saRun(value);
+  };
+
+  window.saCommand = command => {
+    if (!saBiometric) {
+      saPrint("err","COMMAND LOCKED // COMPLETE FINGERPRINT ACCESS FIRST");
+      return;
+    }
+    saRun(command);
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const fp = sa("saFingerprint");
+    const input = sa("saInput");
+    const code = sa("saCode");
+    fp?.addEventListener("pointerdown", startSaBio);
+    fp?.addEventListener("pointerup", cancelSaBio);
+    fp?.addEventListener("pointercancel", cancelSaBio);
+    fp?.addEventListener("pointerleave", cancelSaBio);
+    fp?.addEventListener("keydown", e => {
+      if (e.key === " " || e.key === "Enter") startSaBio(e);
+    });
+    fp?.addEventListener("keyup", e => {
+      if (e.key === " " || e.key === "Enter") cancelSaBio();
+    });
+    input?.addEventListener("keydown", e => { if (e.key === "Enter") window.submitSaCommand(); });
+    code?.addEventListener("keydown", e => { if (e.key === "Enter") window.verifySatelliteCode(); });
+    sa("satelliteAccessModal")?.addEventListener("click", e => {
+      if (e.target.id === "satelliteAccessModal") window.closeSatelliteAccess();
+    });
+    setInterval(() => {
+      const c = sa("saClock");
+      if (c) c.textContent = new Date().toTimeString().split(" ")[0];
+    },1000);
+  });
+})();
+</script>
+
+
+<!-- ===== VK SATELLITE // CINEMATIC HOTKEY WINDOWS ===== -->
+<div id="saCinematicLayer" class="sa-cinematic-layer"></div>
+
+
+<script id="vk-cinematic-hotkeys-js">
+/* ===== VK SATELLITE // NUMBER KEY COMMAND ENGINE =====
+   1..9 + 0 = ten cinematic LOCAL simulation commands.
+   These only create visual browser windows and synthetic data.
+*/
+(() => {
+  "use strict";
+
+  const cinematicCommands = {
+    "1": {
+      title:"Encrypting", sub:"Securing VK satellite data", badge:"DATA ENCRYPTION",
+      screen:"INITIALIZING ENCRYPTION MATRIX...\nBLOCK 01  ████████████ 100%\nBLOCK 02  ████████████ 100%\nBLOCK 03  ████████████ 100%\nSESSION KEY: VK-01-LOCAL\nSTATUS: ENCRYPTION COMPLETE", type:"success"
+    },
+    "2": {
+      title:"Activating HAWK", sub:"Engage all simulated target markers", badge:"HAWK DEFENSE SIMULATION",
+      screen:"HAWK CORE........ ONLINE\nTARGET FIELD...... VISUAL ONLY\nTRACKED MARKERS... 14\nLOCK STATE......... SIMULATED\nACTION............. NONE", type:"alert"
+    },
+    "3": {
+      title:"Password Decryption", sub:"Calculating synthetic hashes", badge:"DECRYPTOR",
+      screen:"[00:00:01] HASH ENGINE STARTED\nCANDIDATES TESTED... 24,801\nMASTER KEY.......... SYNTHETIC\nTRANSIENT KEY....... LOCAL\nPLAINTEXT............ DEMO DATA", type:"success"
+    },
+    "4": {
+      title:"Scanning Nodes", sub:"Mapping the local VK satellite network", badge:"NODE SCANNER",
+      screen:"NODE A-17.......... ONLINE\nRELAY B-09......... ONLINE\nGROUND C-04....... LINKED\nBEACON D-21....... NOMINAL\nEXTERNAL NODES.... 0", type:""
+    },
+    "5": {
+      title:"Security Breach", sub:"LEVEL 3 ACCESS REQUIRED", badge:"SECURITY ALERT",
+      screen:"!! SIMULATION ALERT !!\nAUTHORITY ESCALATION REQUESTED\nPERIMETER STATUS.... VISUAL ONLY\nEXTERNAL ACCESS..... DISABLED\nNO REAL ACTION TAKEN", type:"alert"
+    },
+    "6": {
+      title:"Satellite Uplink", sub:"Synchronizing orbital communications", badge:"UPLINK CONTROL",
+      screen:"UPLINK CHANNEL..... VK-01\nSIGNAL.............. 98.4%\nLATENCY............. 42ms\nPACKET LOSS......... 0%\nGROUND RELAY....... SECURE", type:"success"
+    },
+    "7": {
+      title:"Orbital Tracking", sub:"Rendering live fictional trajectory", badge:"ORBITAL TRACKER",
+      screen:"ALTITUDE........... 408.21 KM\nVELOCITY........... 7.66 KM/S\nINCLINATION........ 51.64°\nORBIT.............. LEO\nSTATE.............. NOMINAL", type:""
+    },
+    "8": {
+      title:"Data Extraction", sub:"Collecting synthetic telemetry", badge:"DATA CORE",
+      screen:"TELEMETRY PACKETS.. 08,421\nMEMORY CACHE........ 62%\nDATA BUS............ 842 MB/S\nARCHIVE............. LOCAL\nEXPORT.............. DISABLED", type:"success"
+    },
+    "9": {
+      title:"AI Core Online", sub:"Initializing VK autonomous simulation core", badge:"AI CORE",
+      screen:"NEURAL MATRIX...... READY\nMODEL STATE......... STABLE\nDECISION ENGINE..... SIMULATION\nVOICE MODULE........ READY\nCORE RESPONSE....... ONLINE", type:"success"
+    },
+    "0": {
+      title:"Emergency Lockdown", sub:"Visual lockdown protocol engaged", badge:"LOCKDOWN",
+      screen:"SECURING DISPLAY LAYER........ OK\nFREEZING COMMAND QUEUE......... OK\nEXTERNAL ACTIONS............... OFF\nSIMULATION BOUNDARY............ ACTIVE\nTYPE ESC TO CLOSE", type:"alert"
+    }
+  };
+
+  let zIndex = 1201;
+
+  function layer(){ return document.getElementById("saCinematicLayer"); }
+
+  function closeWindow(win){
+    if (!win) return;
+    win.style.animation = "saWinIn .16s ease-in reverse";
+    setTimeout(() => win.remove(), 150);
+  }
+
+  function createWindow(key){
+    const data = cinematicCommands[key];
+    const root = layer();
+    if (!data || !root) return;
+
+    const win = document.createElement("div");
+    win.className = "sa-cinematic-window " + (data.type || "");
+    win.style.zIndex = ++zIndex;
+
+    const left = 8 + Math.random() * 50;
+    const top = 10 + Math.random() * 48;
+    win.style.left = left + "vw";
+    win.style.top = top + "vh";
+
+    win.innerHTML = `
+      <div class="sa-cw-top">
+        <span>VK-${key === "0" ? "10" : key} // LOCAL CONSOLE</span>
+        <button class="sa-cw-close" aria-label="Close">×</button>
+      </div>
+      <div class="sa-cw-content">
+        <div class="sa-cw-badge">${data.badge}</div>
+        <div class="sa-cw-title">${data.title}</div>
+        <div class="sa-cw-sub">${data.sub}</div>
+        <div class="sa-cw-screen">${data.screen}</div>
+        <div class="sa-cw-progress"><i></i></div>
+        <div class="sa-cw-foot">COMMAND [${key === "0" ? "10" : key}] // FICTIONAL SIMULATION // NO EXTERNAL ACTION</div>
+      </div>
+    `;
+
+    root.appendChild(win);
+    win.querySelector(".sa-cw-close").addEventListener("click", () => closeWindow(win));
+
+    // Make the window lightly draggable, like a desktop command panel.
+    const bar = win.querySelector(".sa-cw-top");
+    let drag = false, ox = 0, oy = 0;
+    bar.style.cursor = "move";
+    bar.addEventListener("pointerdown", e => {
+      drag = true; ox = e.clientX - win.offsetLeft; oy = e.clientY - win.offsetTop;
+      win.setPointerCapture?.(e.pointerId); win.style.zIndex = ++zIndex;
+    });
+    bar.addEventListener("pointermove", e => {
+      if (!drag) return;
+      win.style.left = Math.max(0, Math.min(window.innerWidth-win.offsetWidth, e.clientX-ox)) + "px";
+      win.style.top = Math.max(0, Math.min(window.innerHeight-win.offsetHeight, e.clientY-oy)) + "px";
+    });
+    bar.addEventListener("pointerup", () => drag = false);
+
+    // Keep each generated command window temporary, but long enough to feel cinematic.
+    setTimeout(() => closeWindow(win), 9000);
+  }
+
+  window.vkCinematicCommand = key => {
+    const k = String(key);
+    if (!cinematicCommands[k]) return;
+
+    // Require the Satellite Access biometric stage when the access UI is being used.
+    const modal = document.getElementById("satelliteAccessModal");
+    const open = modal?.classList.contains("open");
+    if (open && typeof window.saCommand === "function") {
+      // Do not bypass the existing biometric lock.
+      // The hotkeys are allowed only after the access terminal reports biometric unlock.
+      const output = document.getElementById("saOutput");
+      if (output && output.dataset.biometricUnlocked !== "true") {
+        if (typeof window.saPrint === "function") window.saPrint("err","HOTKEY LOCKED // COMPLETE FINGERPRINT ACCESS FIRST");
+        return;
+      }
+    }
+
+    createWindow(k);
+    if (typeof window.vkPlayTone === "function") window.vkPlayTone(330 + Number(k || 10) * 22, .08, "square", .025);
+  };
+
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+    // Number keys work globally, but not while typing into an input.
+    const tag = document.activeElement?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+    if (/^[0-9]$/.test(e.key)) {
+      // If the Satellite Access window is open, use its biometric gate.
+      const modal = document.getElementById("satelliteAccessModal");
+      if (modal?.classList.contains("open")) {
+        const out = document.getElementById("saOutput");
+        if (out?.dataset.biometricUnlocked !== "true") return;
+      }
+      window.vkCinematicCommand(e.key);
+    }
+
+    if (e.key === "Escape") {
+      const root = layer();
+      if (root) root.innerHTML = "";
+    }
+  });
+
+  // Expose a small API for the Satellite Access UI.
+  window.vkEnableCinematicHotkeys = () => {
+    const out = document.getElementById("saOutput");
+    if (out) out.dataset.biometricUnlocked = "true";
+  };
+})();
+</script>
+
 </body>
 </html>
