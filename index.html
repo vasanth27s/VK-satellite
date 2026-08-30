@@ -1550,6 +1550,55 @@ code,
 }
 </style>
 
+
+<style id="vk-universal-responsive-final">
+html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+img,svg,video,canvas,iframe{max-width:100%;height:auto}
+button,input,select,textarea{max-width:100%;font-size:16px}
+button{touch-action:manipulation}
+main{width:min(1500px,94vw);max-width:100%;margin-inline:auto}
+.grid,.panel,.card,.terminal,.map,.radar,.satellite{min-width:0;max-width:100%}
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table{min-width:560px}
+.terminal-body,.emergency-output,.sa-output{overflow:auto;-webkit-overflow-scrolling:touch}
+#space,#particles,#radarCanvas{max-width:none}
+@media(max-width:900px){
+ header{padding:0 16px}.hero{grid-template-columns:1fr;gap:20px;padding:55px 0 35px}
+ main{width:calc(100% - 28px)}.satellite{height:340px}
+ .span-3,.span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12}
+ .data-strip{grid-template-columns:repeat(3,1fr)}.nav{display:none}
+ .section-head{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:600px){
+ main{width:calc(100% - 18px)}header{height:auto;min-height:64px;padding:9px 10px}
+ .brand{gap:8px;min-width:0}.brand-mark{width:36px;height:36px;flex:0 0 36px}
+ .brand strong{font-size:11px;letter-spacing:2px}.brand small{font-size:7px}
+ .status{font-size:9px;gap:5px;white-space:nowrap}
+ .hero{min-height:auto;padding:42px 0 28px}.hero h1{font-size:clamp(42px,16vw,78px);letter-spacing:-4px}
+ .hero p{font-size:10px;line-height:1.7;margin:20px 0}
+ .hero-actions{display:grid;grid-template-columns:1fr;width:100%}.hero-actions button{width:100%;min-height:44px}
+ .satellite{height:275px}.sat-body{transform:scale(.62) perspective(400px) rotateX(22deg) rotateY(-18deg)}
+ .data-strip{grid-template-columns:repeat(2,1fr)}section{padding:45px 0}
+ .section-head h2{font-size:21px}.section-head p{font-size:9px}.card{padding:14px}
+ .metric{min-height:120px}.metric strong{font-size:27px;margin-top:16px}
+ .map,.radar{min-height:310px;height:310px}.terminal{height:390px}
+ .terminal-top{padding:9px 11px;font-size:9px}.terminal-body{padding:12px;font-size:10px}
+ .input-row{min-width:0}.input-row span{padding:11px 7px;font-size:9px}
+ #terminalInput{min-width:0;font-size:14px}.command-list{grid-template-columns:1fr}
+ .command-list button{min-height:42px}.footer{flex-direction:column;padding-bottom:45px}
+}
+@media(max-width:380px){
+ .brand small{display:none}.status{font-size:8px}.hero h1{font-size:clamp(38px,15vw,58px)}
+ .satellite{height:235px}.sat-body{transform:scale(.5) perspective(400px) rotateX(22deg) rotateY(-18deg)}
+ .data-strip{grid-template-columns:1fr}.big-number{font-size:37px}
+}
+@media(hover:none){button:hover{background:rgba(0,234,255,.05);box-shadow:none}}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+}
+</style>
+
 </head>
 <body>
 
@@ -1633,10 +1682,6 @@ code,
 <div id="adminRibbon" class="admin-ribbon">SATELLITE ADMIN // ADMIN COMMAND SESSION ACTIVE</div>
 
 <!-- ===== EMERGENCY CONTROL ===== -->
-<div class="emergency-dock">
-  <button id="emergencyButton" class="emergency-button" onclick="openEmergencyPanel()">⚠ EMERGENCY CONTROL</button>
-</div>
-
 <div id="emergencyModal" class="emergency-modal">
   <div class="emergency-box emergency-command-box">
     <div class="emergency-topbar">
@@ -4136,6 +4181,22 @@ box-shadow:inset 0 0 35px rgba(0,234,255,.12),0 0 30px rgba(0,234,255,.08)}
 })();
 </script>
 <!-- ===== END EMERGENCY DATA TRANSFER ===== -->
+
+
+<script id="vk-final-cleanup">
+(function(){
+ function clean(){
+   document.querySelectorAll('.emergency-dock,.emergency-button').forEach(function(el){el.remove();});
+   document.querySelectorAll('button,a,[role="button"]').forEach(function(el){
+     var t=(el.textContent||'').replace(/\s+/g,' ').trim().toUpperCase();
+     if(t.includes('EMERGENCY DATA TRANSFER') && !el.closest('.emergency-command-box')) el.remove();
+   });
+ }
+ clean();
+ document.addEventListener('DOMContentLoaded',clean);
+ new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 
 </body>
 </html>
