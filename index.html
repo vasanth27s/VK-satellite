@@ -6466,6 +6466,45 @@ header:not(.topbar) .status{
      Persistent touch-friendly quick access for all core panels.
      ========================================================= -->
 <style id="vk-universal-mobile-access">
+  .vk-mobile-top-access{
+    display:none;
+  }
+  @media(max-width:760px){
+    .vk-mobile-top-access{
+      position:fixed;
+      left:0;right:0;top:72px;
+      z-index:145;
+      display:flex;
+      gap:5px;
+      padding:6px 8px;
+      background:rgba(2,7,12,.96);
+      border-bottom:1px solid rgba(0,234,255,.18);
+      box-shadow:0 8px 24px rgba(0,0,0,.32);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+    .vk-mobile-top-access button{
+      flex:1 1 0;
+      min-width:0;
+      min-height:38px;
+      padding:7px 4px;
+      background:#071018;
+      border:1px solid rgba(0,234,255,.3);
+      color:#00eaff;
+      font:700 8px/1.1 "Courier New",monospace;
+      letter-spacing:.4px;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .vk-mobile-top-access .m-term{color:#35ff5a;border-color:rgba(53,255,90,.34)}
+    .vk-mobile-top-access .m-crypto{color:#b99cff;border-color:rgba(139,92,246,.38)}
+    body{padding-top:50px!important}
+  }
+  @media(max-width:430px){
+    .vk-mobile-top-access{top:72px;padding:5px 6px}
+    .vk-mobile-top-access button{min-height:36px;font-size:7px}
+  }
+
   .vk-mobile-access{
     display:none;
     position:fixed;
@@ -6527,11 +6566,11 @@ header:not(.topbar) .status{
     .vk-mobile-access{display:flex}
     body{padding-bottom:72px}
     .vk-header-actions .sat-access-btn,
-    .vk-header-actions .crypto-access-btn{
-      display:none!important;
-    }
+    .vk-header-actions .crypto-access-btn,
     .vk-header-actions .terminal-access-btn{
       display:inline-flex!important;
+      align-items:center;
+      justify-content:center;
     }
 
     .satellite-access-modal{
@@ -6785,7 +6824,7 @@ header:not(.topbar) .status{
       letter-spacing:.35px;
     }
     .vk-header-actions .terminal-access-btn{
-      display:none!important;
+      display:inline-flex!important;
     }
     .vk-view{padding-bottom:18px!important}
     .sa-command-grid{grid-template-columns:1fr 1fr!important}
@@ -6810,10 +6849,89 @@ header:not(.topbar) .status{
     .vk-final-pane{min-height:calc(100dvh - 155px)!important}
   }
 
+  /* ===== FINAL MOBILE VISIBILITY PATCH =====
+     Keep all three primary controls visible on phones. The original
+     responsive rules hid SATELLITE and CRYPTO; this override intentionally
+     wins because it appears last in the cascade. */
+  @media (max-width: 760px){
+    .vk-header-actions{
+      display:flex!important;
+      align-items:center!important;
+      gap:4px!important;
+      flex-wrap:nowrap!important;
+      min-width:0!important;
+    }
+    .vk-header-actions .status{display:none!important}
+    .vk-header-actions .sat-access-btn,
+    .vk-header-actions .terminal-access-btn,
+    .vk-header-actions .crypto-access-btn{
+      display:inline-flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      flex:0 0 auto!important;
+      margin:0!important;
+      min-height:40px!important;
+      padding:7px 8px!important;
+      font-size:8px!important;
+      line-height:1.1!important;
+      white-space:nowrap!important;
+      touch-action:manipulation!important;
+    }
+    .vk-mobile-access{
+      display:flex!important;
+      visibility:visible!important;
+      opacity:1!important;
+      pointer-events:auto!important;
+    }
+    .emergency-dock{
+      bottom:calc(76px + env(safe-area-inset-bottom))!important;
+    }
+  }
+
+  @media (max-width: 430px){
+    .vk-header{
+      min-height:72px!important;
+      height:auto!important;
+    }
+    .vk-header-actions .sat-access-btn,
+    .vk-header-actions .terminal-access-btn,
+    .vk-header-actions .crypto-access-btn{
+      min-width:0!important;
+      min-height:38px!important;
+      padding:6px 5px!important;
+      font-size:7px!important;
+      letter-spacing:.2px!important;
+    }
+    .vk-header-actions .sat-access-btn{max-width:74px!important}
+    .vk-header-actions .terminal-access-btn{max-width:76px!important}
+    .vk-header-actions .crypto-access-btn{max-width:60px!important}
+    .vk-brand-copy strong{font-size:10px!important;letter-spacing:1.5px!important}
+  }
+
+  @media (max-width: 360px){
+    .vk-header{padding-left:8px!important;padding-right:8px!important}
+    .vk-brand{gap:6px!important}
+    .vk-brand-mark{width:38px!important;height:38px!important}
+    .vk-brand-copy{display:none!important}
+    .vk-header-actions .sat-access-btn,
+    .vk-header-actions .terminal-access-btn,
+    .vk-header-actions .crypto-access-btn{
+      min-height:36px!important;
+      padding:5px 4px!important;
+      font-size:6.5px!important;
+    }
+  }
+
   @media(prefers-reduced-motion:reduce){
     .vk-mobile-access button{transition:none!important}
   }
 </style>
+
+<nav class="vk-mobile-top-access" aria-label="Mobile primary access">
+  <button class="m-sat" type="button" onclick="openSatelliteAccess()">◉ SATELLITE</button>
+  <button class="m-term" type="button" onclick="openTerminalAccess()">▣ TERMINAL</button>
+  <button class="m-crypto" type="button" onclick="openCryptoAccess()">◆ CRYPTO</button>
+</nav>
 
 <nav class="vk-mobile-access" aria-label="Mobile command access">
   <button class="m-sat" type="button" onclick="openSatelliteAccess()">◉<br>SATELLITE<br>ACCESS</button>
@@ -6840,7 +6958,7 @@ header:not(.topbar) .status{
   }
 
   document.addEventListener("click",function(e){
-    var btn=e.target.closest ? e.target.closest(".vk-mobile-access button") : null;
+    var btn=e.target.closest ? e.target.closest(".vk-mobile-access button, .vk-mobile-top-access button") : null;
     if(!btn)return;
     e.preventDefault();
     e.stopPropagation();
